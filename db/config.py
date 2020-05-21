@@ -16,7 +16,7 @@ class Config:
     'This is where the SQL queries live'
     SQL_QUERIES_FOLDER = environ.get('SQL_QUERIES_FOLDER')
 
-    TABLES = []
+    TABLES = ['users,roles']
 
 
 class Database:

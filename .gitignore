@@ -1,4 +1,4 @@
 # contains database credentials
 /.env
-/venv
-/__pycache__
+venv/
+__pycache__/

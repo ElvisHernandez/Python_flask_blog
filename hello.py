@@ -5,12 +5,30 @@ from flask_moment import Moment
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
-import sys
+from flask_mail import Mail, Message
+import os
 
 app = Flask(__name__)
 bootstrap = Bootstrap(app)
 moment = Moment(app)
 app.config['SECRET_KEY'] = 'MYSECRETKEY'
+app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+mail = Mail(app)
+
+app.config['FLASKY_MAIL_SUBJECT_PREFIX'] = '[Flasky]'
+app.config['FLASKY_MAIL_SENDER'] = 'Flasky Admin <flasky@gmail.com>'
+
+
+def send_email(to, subject, template, **kwargs):
+    msg = Message(app.config['FLASKY_MAIL_SUBJECT_PREFIX'] + subject,
+                  sender=app.config['FLASKY_MAIL_SENDER'], recipients=[to])
+    # msg.body = render_template(template + '.txt', **kwargs)
+    msg.html = render_template(template + '.html', **kwargs)
+    mail.send(msg)
 
 
 def get_db():
@@ -38,8 +56,12 @@ def check_user(user, db_connection):
                         VALUES (%s, %s);'''
         cursor.execute(sql_insert, (user, 3))
         db_connection.commit()
+        send_email(os.environ.get('ADMIN_EMAIL'),
+                   'New User', 'mail/new_user', name=user)
+        # print('This is the user: ', result)
         return False
     else:
+        # print('This is the user: ', result[0][1])
         return True
 
 

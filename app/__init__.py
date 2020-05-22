@@ -1,20 +1,17 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, g, current_app
 from flask_bootstrap import Bootstrap
-from flask_mail import Mail
+from flask_mail import Mail, Message
 from flask_moment import Moment
 from config import config
+from threading import Thread
 
 bootstrap = Bootstrap()
 mail = Mail()
 moment = Moment()
 
-
 def create_app(config_name):
     app = Flask(__name__)
     app.config.from_object(config[config_name])
-    # config[config_name].init_app(app)
-    # app.config.from_pyfile('config.py')
-    print('This is inside the create_app function')
     bootstrap.init_app(app)
     mail.init_app(app)
     moment.init_app(app)
@@ -24,5 +21,4 @@ def create_app(config_name):
 
     return app
 
-
-print('Im getting this far')
+from .db.config import Config,Database

@@ -1,8 +1,10 @@
 'Load config from enviorment variables.'
-from os import environ
+import os
+from flask import g
 import sys
 from dotenv import load_dotenv
 from loguru import logger
+# from ..email import send_email
 import psycopg2
 
 load_dotenv()
@@ -10,11 +12,11 @@ load_dotenv()
 
 class Config:
     "Database config"
-    DATABASE_USERNAME = environ.get('DATABASE_USERNAME')
-    DATABASE_NAME = environ.get('DATABASE_NAME')
+    DATABASE_USERNAME = os.environ.get('DATABASE_USERNAME')
+    DATABASE_NAME = os.environ.get('DATABASE_NAME')
 
     'This is where the SQL queries live'
-    SQL_QUERIES_FOLDER = environ.get('SQL_QUERIES_FOLDER')
+    SQL_QUERIES_FOLDER = os.environ.get('SQL_QUERIES_FOLDER')
 
     TABLES = ['users,roles']
 
@@ -48,3 +50,28 @@ class Database:
         cursor = self.conn.cursor()
         cursor.execute(open('./db/schema.sql').read())
         self.conn.commit()
+
+    def get_db(self):
+        if not hasattr(g, 'db'):
+            db = Database(Config)
+            g.db = db.connection()
+        return g.db
+
+def check_user(user, db_connection):
+
+    cursor = db_connection.cursor()
+    sql_query = '''SELECT * FROM users WHERE username = %s;'''
+    cursor.execute(sql_query, (user,))
+    result = cursor.fetchall()
+    if len(result) == 0:
+        sql_insert = '''INSERT INTO users (username,role_id)
+                        VALUES (%s, %s);'''
+        cursor.execute(sql_insert, (user, 3))
+        db_connection.commit()
+        send_email(os.environ.get('ADMIN_EMAIL'),
+                   'New User', 'mail/new_user', name=user)
+        return False
+    else:
+        return True
+
+from ..email import send_email

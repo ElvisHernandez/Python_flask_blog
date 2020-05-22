@@ -15,7 +15,6 @@ def close_db(error):
 
 @main.route('/', methods=['GET', 'POST'])
 def index():
-    print ('Does this print??')
     form = NameForm()
 
     if form.validate_on_submit():
@@ -41,3 +40,7 @@ def index():
 
     return render_template('index.html', form=form, name=session.get('name'),
                             known=session.get('known',False))
+
+@main.route('/user/<name>')
+def user(name):
+    return render_template('user.html', name=name)

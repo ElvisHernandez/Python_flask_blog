@@ -4,7 +4,6 @@ from flask import g
 import sys
 from dotenv import load_dotenv
 from loguru import logger
-# from ..email import send_email
 import psycopg2
 
 load_dotenv()
@@ -42,7 +41,7 @@ class Database:
             finally:
                 logger.info('Connection opened successfully.')
 
-    def close(self):
+    def __del__(self):
         if self.conn is not None:
             self.conn.close()
 
@@ -53,8 +52,9 @@ class Database:
 
     def get_db(self):
         if not hasattr(g, 'db'):
-            db = Database(Config)
-            g.db = db.connection()
+            if self.conn is None:
+                self.connection()
+            g.db = self.conn
         return g.db
 
 def check_user(user, db_connection):

@@ -25,10 +25,15 @@ class DevelopmentConfig(Config):
     DEBUG = True
     DATABASE_USERNAME = os.environ.get('DATABASE_USERNAME')
     DATABASE_NAME = os.environ.get('DATABASE_NAME')
+    USER_TABLE="users"
 
 
 class TestingConfig(Config):
-    pass
+    TESTING = True
+    PRESERVE_CONTEXT_ON_EXCEPTION = False
+    DATABASE_USERNAME = os.environ.get('DATABASE_USERNAME')
+    DATABASE_NAME = os.environ.get('DATABASE_NAME')
+    USER_TABLE="users_testing"
 
 
 class ProductionConfig(Config):

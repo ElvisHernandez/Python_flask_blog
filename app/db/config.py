@@ -4,7 +4,8 @@ from flask import g
 import sys
 from dotenv import load_dotenv
 from loguru import logger
-import psycopg2
+import psycopg2 
+from psycopg2 import sql
 
 load_dotenv()
 
@@ -57,15 +58,14 @@ class Database:
             g.db = self.conn
         return g.db
 
-def check_user(user, db_connection):
-
+def check_user(user,table, db_connection):
     cursor = db_connection.cursor()
-    sql_query = '''SELECT * FROM users WHERE username = %s;'''
+    sql_query = sql.SQL('SELECT * FROM {} WHERE username = %s;').format(sql.Identifier(table))
+
     cursor.execute(sql_query, (user,))
     result = cursor.fetchall()
     if len(result) == 0:
-        sql_insert = '''INSERT INTO users (username,role_id)
-                        VALUES (%s, %s);'''
+        sql_insert = sql.SQL('INSERT INTO {} (username,role_id) VALUES (%s,%s)').format(sql.Identifier(table))
         cursor.execute(sql_insert, (user, 3))
         db_connection.commit()
         send_email(os.environ.get('ADMIN_EMAIL'),

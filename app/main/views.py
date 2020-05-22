@@ -21,7 +21,8 @@ def index():
         try:
             db = Database(Config)
             conn = db.get_db()
-            is_in_db = check_user(form.name.data,conn)
+            user_table = current_app.config.get('USER_TABLE')
+            is_in_db = check_user(form.name.data,user_table,conn)
             if is_in_db is False:
                 session['known'] = False
                 print('The user was not found')

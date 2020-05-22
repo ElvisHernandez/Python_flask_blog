@@ -57,21 +57,3 @@ class Database:
                 self.connection()
             g.db = self.conn
         return g.db
-
-def check_user(user,table, db_connection):
-    cursor = db_connection.cursor()
-    sql_query = sql.SQL('SELECT * FROM {} WHERE username = %s;').format(sql.Identifier(table))
-
-    cursor.execute(sql_query, (user,))
-    result = cursor.fetchall()
-    if len(result) == 0:
-        sql_insert = sql.SQL('INSERT INTO {} (username,role_id) VALUES (%s,%s)').format(sql.Identifier(table))
-        cursor.execute(sql_insert, (user, 3))
-        db_connection.commit()
-        send_email(os.environ.get('ADMIN_EMAIL'),
-                   'New User', 'mail/new_user', name=user)
-        return False
-    else:
-        return True
-
-from ..email import send_email

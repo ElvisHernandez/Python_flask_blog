@@ -2,11 +2,12 @@ from datetime import datetime
 from flask import render_template, session, redirect, url_for,g,flash, current_app
 from . import main
 from .forms import NameForm
-from ..db.config import Config,Database,check_user
+from ..db.config import Config,Database
 from threading import Thread
 from flask_mail import Message
 import os
 from .. import mail
+from ..db.UserModel import User
 
 @main.teardown_request
 def close_db(error):
@@ -21,9 +22,8 @@ def index():
         try:
             db = Database(Config)
             conn = db.get_db()
-            user_table = current_app.config.get('USER_TABLE')
-            is_in_db = check_user(form.name.data,user_table,conn)
-            if is_in_db is False:
+            user = User(form.name.data,3,'dfsfhsdfhstyetyrytsaerfsd')
+            if user.in_db is False:
                 session['known'] = False
                 print('The user was not found')
             else:

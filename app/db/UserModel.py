@@ -22,7 +22,6 @@ class User:
             = %s;''').format(sql.Identifier(self.tablename))
             cursor.execute(sql_query,(self.username,))
             users = cursor.fetchall()
-            print ('These are the user results: ', users)
             if len(users) == 0:
                 return False
             else:
@@ -30,6 +29,23 @@ class User:
                 return True
         except:
             print ('Something went wrong while checking for the user')
+    
+    
+    def role(self):
+        try:
+            conn = g.db
+            cursor = conn.cursor()
+            sql_join = sql.SQL('''SELECT name FROM users
+            JOIN roles ON users.role_id = roles.id
+            WHERE users.username = %s''')
+            cursor.execute(sql_join,(self.username,))
+            role_name = cursor.fetchall()[0][0]
+            print ('This is in the role instance method: ',role_name)
+            return role_name
+        
+        except: 
+            print ('Something went wrong in the role instance method')
+            return None
 
     @property
     def password(self): 
@@ -43,7 +59,6 @@ class User:
         return check_password_hash(self.password_hash,password)
 
     def insert_user(self):
-        print ("We're in the insert user function")
         try:
             conn = g.db
             cursor = conn.cursor()

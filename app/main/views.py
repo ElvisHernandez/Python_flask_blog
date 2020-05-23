@@ -2,7 +2,7 @@ from datetime import datetime
 from flask import render_template, session, redirect, url_for,g,flash, current_app
 from . import main
 from .forms import NameForm
-from ..db.config import Config,Database
+from ..db.config import Config,Database,CRUD
 from threading import Thread
 from flask_mail import Message
 import os
@@ -23,7 +23,9 @@ def index():
             db = Database(Config)
             conn = db.get_db()
             user = User(form.name.data,3,'dfsfhsdfhstyetyrytsaerfsd')
-            user.role()
+            user.insert_user()
+
+
             if user.in_db is False:
                 session['known'] = False
                 print('The user was not found')

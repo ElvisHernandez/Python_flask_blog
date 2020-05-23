@@ -57,3 +57,22 @@ class Database:
                 self.connection()
             g.db = self.conn
         return g.db
+
+class CRUD:
+    @staticmethod
+    def _check(table,id,value):
+        try:
+            conn = g.db
+            cursor = conn.cursor()
+            sql_query = sql.SQL('''SELECT * FROM {} WHERE {}
+            = %s''').format(sql.Identifier(table),
+            sql.Identifier(id))
+            cursor.execute(sql_query,(value,))
+            matches = cursor.fetchall()
+
+            print ('This is inside the check function from the CRUD class: ', matches)
+            cursor.close()
+            return matches
+        except:
+            print ('something went wrong in the check function from the CRUD class')
+            return None

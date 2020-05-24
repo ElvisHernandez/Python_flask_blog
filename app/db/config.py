@@ -76,3 +76,30 @@ class CRUD:
         except:
             print ('something went wrong in the check function from the CRUD class')
             return None
+    
+    @staticmethod
+    def _insert(table,**kwargs):
+        try:
+            conn = g.db
+            cursor = conn.cursor()
+            keys = tuple(kwargs.keys())
+            values = tuple(kwargs.values())
+            
+            insert_params = ''
+            insert_args = ''
+            for i in range(len(keys)):
+                if i == len(keys) - 1:
+                    insert_params += ' {}'
+                    insert_args += ' %s'
+                else:
+                    insert_params += " {}, "
+                    insert_args += " %s, "
+            insert_args = "(" + insert_args + ")"
+            insert_params = ("(" + insert_params + ")").format(*keys)
+
+            sql_insert = '''INSERT INTO {} {} VALUES {};'''.format(table,insert_params,insert_args)
+            cursor.execute(sql_insert, values)
+            conn.commit()
+            cursor.close()
+        except:
+            print ('Something went wrong in the _insert method from the CRUD class')

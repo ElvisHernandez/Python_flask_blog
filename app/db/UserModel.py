@@ -50,21 +50,10 @@ class User(CRUD):
         return check_password_hash(self.password_hash,password)
 
     def insert_user(self):
-        if self.in_db is False:   
-            try:
-                conn = g.db
-                cursor = conn.cursor()
-                sql_insert = sql.SQL('''INSERT INTO {} (username,role_id,password_hash)
-                    VALUES (%s,%s,%s)''').format(sql.Identifier(self.tablename))
-
-                cursor.execute(sql_insert,(self.username,self.role_id,self.password_hash))
-                conn.commit()
-                self.in_db = True
-                send_email(os.environ.get('ADMIN_EMAIL'),
-                    'New User', 'mail/new_user', name=self.username)
-                cursor.close()
-                print ('The user was successfully inserted into the database')
-            except:
-                print ('Something went wrong with the insertion')
+        if self.in_db is False:
+            self._insert(self.tablename, username=self.username,
+            role_id=self.role_id,password_hash=self.password_hash)
+            send_email(os.environ.get('ADMIN_EMAIL'),'New User',
+                            'mail/new_user', name=self.username)
         else:
             print ('The user was already in the database')

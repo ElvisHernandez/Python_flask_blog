@@ -25,7 +25,6 @@ def index():
             user = User(form.name.data,3,'dfsfhsdfhstyetyrytsaerfsd')
             user.insert_user()
 
-
             if user.in_db is False:
                 session['known'] = False
                 print('The user was not found')

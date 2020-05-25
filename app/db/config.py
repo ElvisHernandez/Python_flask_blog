@@ -81,22 +81,20 @@ class CRUD:
         try:
             conn = g.db
             cursor = conn.cursor()
-            keys = tuple(kwargs.keys())
             values = tuple(kwargs.values())
-            
             insert_params = ''
             insert_args = ''
-            for i in range(len(keys)):
-                if i == len(keys) - 1:
-                    insert_params += ' {}'
-                    insert_args += ' %s'
-                else:
-                    insert_params += " {}, "
-                    insert_args += " %s, "
-            insert_args = "(" + insert_args + ")"
-            insert_params = ("(" + insert_params + ")").format(*keys)
+            fields = []
+            for field in kwargs:
+                fields.append(sql.Identifier(field))
+                insert_params += '{}, '
+                insert_args += '%s, '
+                
+            insert_args = "(" + insert_args[:-2] + ")"
+            insert_params = "(" + insert_params[:-2] + ")"
+            sql_insert = '''INSERT INTO {} {} VALUES {} RETURNING id;'''.format('{}',insert_params,insert_args)
 
-            sql_insert = '''INSERT INTO {} {} VALUES {} RETURNING id;'''.format(table,insert_params,insert_args)
+            sql_insert = sql.SQL(sql_insert).format(sql.Identifier(table),*fields)
             cursor.execute(sql_insert, values)
             primary_key = cursor.fetchone()[0]
             conn.commit()

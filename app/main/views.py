@@ -30,7 +30,7 @@ def index():
                 'username': "elvishernandeztheone",
                 'role_id' : 2
             }
-            user._update('users',user.id,new_props)
+            # user._update('users',user.id,new_props)
 
             if user.in_db is False:
                 session['known'] = False

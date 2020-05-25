@@ -23,7 +23,14 @@ def index():
             db = Database(Config)
             conn = db.get_db()
             user = User(form.name.data,3,'dfsfhsdfhstyetyrytsaerfsd')
-            user.insert_user()
+            
+            user.insert()
+
+            new_props = {
+                'username': "elvishernandeztheone",
+                'role_id' : 2
+            }
+            user._update('users',user.id,new_props)
 
             if user.in_db is False:
                 session['known'] = False

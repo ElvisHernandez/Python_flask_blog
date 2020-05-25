@@ -70,11 +70,10 @@ class CRUD:
             cursor.execute(sql_query,(value,))
             matches = cursor.fetchall()
 
-            print ('This is inside the check function from the CRUD class: ', matches)
             cursor.close()
             return matches
-        except:
-            print ('something went wrong in the check function from the CRUD class')
+        except psycopg2.Error as e:
+            print ('something went wrong in the check function from the CRUD class: ',e)
             return None
     
     @staticmethod
@@ -97,9 +96,53 @@ class CRUD:
             insert_args = "(" + insert_args + ")"
             insert_params = ("(" + insert_params + ")").format(*keys)
 
-            sql_insert = '''INSERT INTO {} {} VALUES {};'''.format(table,insert_params,insert_args)
+            sql_insert = '''INSERT INTO {} {} VALUES {} RETURNING id;'''.format(table,insert_params,insert_args)
             cursor.execute(sql_insert, values)
+            primary_key = cursor.fetchone()[0]
             conn.commit()
             cursor.close()
-        except:
-            print ('Something went wrong in the _insert method from the CRUD class')
+            return primary_key
+        except psycopg2.Error as e:
+            print ('Something went wrong in the _insert method from the CRUD class: ',e)
+            return None
+
+    @staticmethod
+    def _delete(table,id):
+        try:
+            conn = g.db
+            cursor = conn.cursor()
+            sql_delete = sql.SQL('''DELETE FROM {} WHERE id = %s RETURNING id
+            ;''').format(sql.Identifier(table))
+            cursor.execute(sql_delete,(id,))
+            deleted = cursor.fetchone()
+            conn.commit()
+            print ('This is the deleted row: ',deleted)
+
+            cursor.close()
+        except psycopg2.Error as e:
+            print ('Something went wrong in the _delete method in the CRUD class: ',e)
+
+    @staticmethod
+    def _update(table,primary_key,prop_dict):
+        try:
+            conn = g.db 
+            sql_string = ''
+            fields = []
+            values = (*tuple(prop_dict.values()), primary_key) 
+            for col in prop_dict:
+                sql_string += '{} = %s, '
+                fields.append(sql.Identifier(col))
+            sql_string = sql_string[:-2]
+
+            cursor = conn.cursor()
+            sql_string = 'UPDATE {} SET {} WHERE id = %s'.format('{}', sql_string)
+            sql_update = sql.SQL(sql_string).format(
+               sql.Identifier(table),*fields)
+
+            cursor.execute(sql_update,values)
+            conn.commit()
+            print ('The _update method was successful')
+            cursor.close()
+        except psycopg2.Error as e:
+            print ('Something went wrong in the _update method from the CRUD class')
+

@@ -9,16 +9,22 @@ class User(CRUD):
     tablename = 'users'
     associations = {'roles':'one'}
     def __init__(self,username,role_id,password):
+        self.id = None
         self.username = username
-        self.role_id = role_id
-        self.password = password
         self.in_db = self._check_user()
+        if self.in_db is False:
+            self.role_id = role_id
+            self.password = password
     
     def _check_user(self):
-        query = self._check(self.tablename,'username',self.username)
-        if query is None or len(query) == 0:
+        user = self._check(self.tablename,'username',self.username)
+        if user is None or len(user) == 0:
             return False
         else:
+            # print ('The user was already in the database and these are his/her attributes: ',user)
+            self.id = user[0][0]
+            self.role_id = user[0][1]
+            self.password_hash = user[0][2]
             return True
     
     
@@ -31,7 +37,7 @@ class User(CRUD):
             WHERE users.username = %s''')
             cursor.execute(sql_join,(self.username,))
             role_name = cursor.fetchall()[0][0]
-            print ('This is in the role instance method: ',role_name)
+            # print ('This is in the role instance method: ',role_name)
             return role_name
         
         except: 
@@ -49,11 +55,20 @@ class User(CRUD):
     def verify_password(self,password):
         return check_password_hash(self.password_hash,password)
 
-    def insert_user(self):
+    def insert(self):
         if self.in_db is False:
-            self._insert(self.tablename, username=self.username,
+            primary_key = self._insert(self.tablename, username=self.username,
             role_id=self.role_id,password_hash=self.password_hash)
-            send_email(os.environ.get('ADMIN_EMAIL'),'New User',
-                            'mail/new_user', name=self.username)
+            if primary_key is not None:
+                self.id = primary_key
+                self.in_db = True
+                send_email(os.environ.get('ADMIN_EMAIL'),'New User',
+                                'mail/new_user', name=self.username)
         else:
             print ('The user was already in the database')
+
+    def delete(self):
+        if self.in_db is True:
+            self._delete(self.tablename,self.id)
+        else:
+            print ('The user is not in the database')

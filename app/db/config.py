@@ -38,13 +38,14 @@ class Database:
             except psycopg2.DatabaseError as e:
                 logger.error(e)
                 sys.exit()
+                return None
 
             finally:
                 logger.info('Connection opened successfully.')
 
-    def __del__(self):
-        if self.conn is not None:
-            self.conn.close()
+    # def __del__(self):
+    #     if self.conn is not None:
+    #         self.conn.close()
 
     def init_db(self):
         cursor = self.conn.cursor()
@@ -60,13 +61,13 @@ class Database:
 
 class CRUD:
     @staticmethod
-    def _check(table,id,value):
+    def _check(table,primary_key,value):
         try:
             conn = g.db
             cursor = conn.cursor()
             sql_query = sql.SQL('''SELECT * FROM {} WHERE {}
             = %s''').format(sql.Identifier(table),
-            sql.Identifier(id))
+            sql.Identifier(primary_key))
             cursor.execute(sql_query,(value,))
             matches = cursor.fetchall()
 

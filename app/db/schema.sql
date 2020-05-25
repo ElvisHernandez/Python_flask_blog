@@ -12,13 +12,3 @@ CREATE TABLE IF NOT EXISTS roles
  INSERT INTO roles (name) VALUES ('Admin');
  INSERT INTO roles (name) VALUES ('Moderator');
  INSERT INTO roles (name) VALUES ('User');
-
- --Inserting some seed data
- INSERT INTO users (username,role_id) 
- VALUES ('John',1);
-
- INSERT INTO users (username,role_id) 
- VALUES ('Susan',3);
-
- INSERT INTO users (username,role_id) 
- VALUES ('David',3);

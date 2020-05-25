@@ -67,6 +67,16 @@ class User(CRUD):
         else:
             print ('The user was already in the database')
 
+    def update(self,prop_dict):
+        for prop in prop_dict:
+            if prop == "password" or prop == "password_hash":
+                print ('You cannot update the password in this way')
+                return None
+        if self.in_db is True:
+            user = self._update(self.tablename,self.id,prop_dict)
+            if user is not None:
+                self.username = user[1]
+
     def delete(self):
         if self.in_db is True:
             self._delete(self.tablename,self.id)

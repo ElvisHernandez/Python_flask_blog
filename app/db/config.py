@@ -89,7 +89,7 @@ class CRUD:
                 fields.append(sql.Identifier(field))
                 insert_params += '{}, '
                 insert_args += '%s, '
-                
+
             insert_args = "(" + insert_args[:-2] + ")"
             insert_params = "(" + insert_params[:-2] + ")"
             sql_insert = '''INSERT INTO {} {} VALUES {} RETURNING id;'''.format('{}',insert_params,insert_args)
@@ -133,14 +133,18 @@ class CRUD:
             sql_string = sql_string[:-2]
 
             cursor = conn.cursor()
-            sql_string = 'UPDATE {} SET {} WHERE id = %s'.format('{}', sql_string)
+            sql_string = 'UPDATE {} SET {} WHERE id = %s RETURNING *;'.format('{}', sql_string)
+
             sql_update = sql.SQL(sql_string).format(
                sql.Identifier(table),*fields)
 
             cursor.execute(sql_update,values)
+            row = cursor.fetchone()
+
             conn.commit()
-            print ('The _update method was successful')
             cursor.close()
+            return row
         except psycopg2.Error as e:
-            print ('Something went wrong in the _update method from the CRUD class')
+            print ('Something went wrong in the _update method from the CRUD class: ', e)
+            return None
 

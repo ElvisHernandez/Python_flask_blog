@@ -27,10 +27,11 @@ def index():
             user.insert()
 
             new_props = {
-                'username': "elvishernandeztheone",
-                'role_id' : 2
+                'username': "elvishernansdfsddeztheone"
             }
-            # user._update('users',user.id,new_props)
+            
+            user.update(new_props)
+            
 
             if user.in_db is False:
                 session['known'] = False

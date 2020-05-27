@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS roles
  email VARCHAR(64) UNIQUE,
  username VARCHAR(64) UNIQUE,
  password_hash VARCHAR(128) NOT NULL,
+ confirmed BOOLEAN DEFAULT FALSE,
  role_id INT REFERENCES roles (id));
 
 --Inserting the Admin, Moderator, and user roles

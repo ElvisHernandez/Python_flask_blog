@@ -4,6 +4,7 @@ from . import auth
 from ..db.UserModel import User
 from ..db.config import Database,Config
 from .forms import LoginForm
+from .forms import RegistrationForm
 from psycopg2 import Error
 
 @auth.teardown_request
@@ -11,13 +12,18 @@ def close_db(error):
     if hasattr(g, 'db'):
         g.db.close()
 
+@auth.before_request
+def init_db_session():
+    db = Database(Config)
+    db.get_db()
+
 @auth.route('/login', methods=['GET','POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
         try:
-            db = Database(Config)
-            conn = db.get_db()
+            # db = Database(Config)
+            # conn = db.get_db()
             user = User(form.email.data)
 
             # print ('''This is the result of calling the 
@@ -40,3 +46,19 @@ def logout():
     logout_user()
     flash('You have been signed out.')
     return redirect(url_for('main.index'))
+
+@auth.route('/register',methods=['GET','POST'])
+def register():
+    form = RegistrationForm()
+    print ('I am getting this far??????????????')
+    if form.validate_on_submit():
+        try:
+            user = User(form.email.data,3,form.password.data,
+                username=form.username.data)
+            user.insert()
+            flash('You can now login.')
+            return redirect(url_for('auth.login'))
+        except Error as e:
+            print ('There was an error registering the user: ',e)
+    return render_template('auth/register.html',form=form)
+    

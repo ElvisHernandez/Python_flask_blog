@@ -1,4 +1,4 @@
-from flask import g
+from flask import g,current_app
 from psycopg2 import sql
 from werkzeug.security import generate_password_hash,check_password_hash
 from ..email import send_email
@@ -6,6 +6,7 @@ import os
 from .config import CRUD, Database,Config
 from flask_login import UserMixin
 from .. import login_manager
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -24,6 +25,7 @@ class User(UserMixin,CRUD):
     tablename = 'users'
     associations = {'roles':'one'}
     def __init__(self,email,role_id=None,password='PROXY_PASSWORD',**kwargs):
+        self.confirmed = False
         self.id = kwargs.get('id',None)
         self.email = email
         self.username = kwargs.get('username',None)
@@ -31,6 +33,23 @@ class User(UserMixin,CRUD):
         if self.in_db is False:
             self.role_id = role_id
             self.password = password
+
+    def generate_confirmation_token(self, expiration=3600):
+        s = Serializer(current_app.config['SECRET_KEY'],expiration)
+        return s.dumps({'confirm': self.id}).decode('utf-8')
+    
+    def confirm(self,token):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token.encode('utf-8'))
+        except:
+            return False
+        if data.get('confirm') != self.id:
+            return False
+        self.confirmed = True
+        new_prop = {'confirmed': True}
+        self.update(new_prop)
+        
     
     def _check_user(self):
         if self.id is not None:

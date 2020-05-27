@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS roles
 
  CREATE TABLE IF NOT EXISTS users
  (id SERIAL PRIMARY KEY,
+ email VARCHAR(64) UNIQUE,
  username VARCHAR(64) UNIQUE,
  password_hash VARCHAR(128) NOT NULL,
  role_id INT REFERENCES roles (id));

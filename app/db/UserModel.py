@@ -4,12 +4,19 @@ from werkzeug.security import generate_password_hash,check_password_hash
 from ..email import send_email
 import os
 from .config import CRUD
+from flask_login import UserMixin
+from .. import login_manager
 
-class User(CRUD):
+@login_manager.user_loader
+def load_user(user_id):
+    return CRUD._check('users','id',user_id)
+
+class User(UserMixin,CRUD):
     tablename = 'users'
     associations = {'roles':'one'}
-    def __init__(self,username,role_id,password):
+    def __init__(self,email,username=None,role_id=None,password=None):
         self.id = None
+        self.email = email
         self.username = username
         self.in_db = self._check_user()
         if self.in_db is False:
@@ -17,14 +24,15 @@ class User(CRUD):
             self.password = password
     
     def _check_user(self):
-        user = self._check(self.tablename,'username',self.username)
+        user = self._check(self.tablename,'email',self.email)
         if user is None or len(user) == 0:
             return False
         else:
-            # print ('The user was already in the database and these are his/her attributes: ',user)
-            self.id = user[0][0]
-            self.role_id = user[0][1]
-            self.password_hash = user[0][2]
+            self.id = user[0]
+            self.email = user[1]
+            self.username = user[2]
+            self.password_hash = user[3]
+            self.role_id = user[4]
             return True
     
     
@@ -57,7 +65,7 @@ class User(CRUD):
 
     def insert(self):
         if self.in_db is False:
-            primary_key = self._insert(self.tablename, username=self.username,
+            primary_key = self._insert(self.tablename,email=self.email, username=self.username,
             role_id=self.role_id,password_hash=self.password_hash)
             if primary_key is not None:
                 self.id = primary_key
@@ -66,8 +74,11 @@ class User(CRUD):
                                 'mail/new_user', name=self.username)
         else:
             print ('The user was already in the database')
-
+    
     def update(self,prop_dict):
+        '''prop_dict is a dictionary with the attributes/columns that 
+        you want to update as keys, and their values as the values.
+        e.g. prop_dict = {'username': 'TheNewUsername','role': 'TheNewRole'}'''
         for prop in prop_dict:
             if prop == "password" or prop == "password_hash":
                 print ('You cannot update the password in this way')

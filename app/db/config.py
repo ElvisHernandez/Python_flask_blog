@@ -69,9 +69,10 @@ class CRUD:
             = %s''').format(sql.Identifier(table),
             sql.Identifier(primary_key))
             cursor.execute(sql_query,(value,))
-            matches = cursor.fetchall()
+            matches = cursor.fetchall()[0]
 
             cursor.close()
+            # print ('These are the so called matches: ',matches)
             return matches
         except psycopg2.Error as e:
             print ('something went wrong in the check function from the CRUD class: ',e)
@@ -149,3 +150,5 @@ class CRUD:
             print ('Something went wrong in the _update method from the CRUD class: ', e)
             return None
 
+#placed at the bottom to avoid circular import
+from .UserModel import User

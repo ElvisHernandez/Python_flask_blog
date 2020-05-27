@@ -23,10 +23,10 @@ def load_user(user_id):
 class User(UserMixin,CRUD):
     tablename = 'users'
     associations = {'roles':'one'}
-    def __init__(self,email,username=None,role_id=None,password='PROXY_PASSWORD',**kwargs):
+    def __init__(self,email,role_id=None,password='PROXY_PASSWORD',**kwargs):
         self.id = kwargs.get('id',None)
         self.email = email
-        self.username = username
+        self.username = kwargs.get('username',None)
         self.in_db = self._check_user()
         if self.in_db is False:
             self.role_id = role_id
@@ -35,6 +35,8 @@ class User(UserMixin,CRUD):
     def _check_user(self):
         if self.id is not None:
             user = self._check(self.tablename,'id',self.id)
+        elif self.username is not None:
+            user = self._check(self.tablename,'username',self.username)
         else:
             user = self._check(self.tablename,'email',self.email)
         print ('This is the user after checking: ',user)

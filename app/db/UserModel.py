@@ -47,6 +47,7 @@ class User(UserMixin,CRUD):
         self.confirmed = True
         new_prop = {'confirmed': True}
         self.update(new_prop)
+        return True
         
     
     def _check_user(self):
@@ -80,7 +81,6 @@ class User(UserMixin,CRUD):
             WHERE users.username = %s''')
             cursor.execute(sql_join,(self.username,))
             role_name = cursor.fetchall()[0][0]
-            # print ('This is in the role instance method: ',role_name)
             return role_name
         
         except: 

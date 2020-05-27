@@ -25,6 +25,7 @@ def index():
     if form.validate_on_submit():
         try:
             user = User(username='elvishernandeztheone')
+            # print ("This is {}'s role on the site: {}".format(user.username,user.role()))
             
             if user.in_db is False:
                 session['known'] = False

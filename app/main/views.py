@@ -24,7 +24,7 @@ def index():
     form = NameForm()
     if form.validate_on_submit():
         try:
-            # user = User('',username='elvis')
+            user = User(username='elvishernandeztheone')
             
             if user.in_db is False:
                 session['known'] = False

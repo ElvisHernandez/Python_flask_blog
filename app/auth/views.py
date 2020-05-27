@@ -24,7 +24,7 @@ def login():
         try:
             # db = Database(Config)
             # conn = db.get_db()
-            user = User(form.email.data)
+            user = User(email=form.email.data)
 
             # print ('''This is the result of calling the 
             # verify_password method: ''',user.verify_password(form.password.data))
@@ -53,8 +53,10 @@ def register():
     print ('I am getting this far??????????????')
     if form.validate_on_submit():
         try:
-            user = User(form.email.data,3,form.password.data,
-                username=form.username.data)
+            user = User(email=form.email.data,
+                        role_id = 3,
+                        password = form.password.data,
+                        username=form.username.data)
             user.insert()
             flash('You can now login.')
             return redirect(url_for('auth.login'))

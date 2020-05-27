@@ -70,11 +70,14 @@ class CRUD:
             sql.Identifier(primary_key))
             cursor.execute(sql_query,(value,))
             matches = cursor.fetchall()
-
             cursor.close()
+            
             if len(matches) == 0:
                 return None
-            return matches[0]
+            props = [desc[0] for desc in cursor.description]
+            prop_dict = dict(zip(props,matches[0]))
+
+            return prop_dict
         except psycopg2.Error as e:
             print ('something went wrong in the check function from the CRUD class: ',e)
             return None

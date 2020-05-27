@@ -15,12 +15,12 @@ class RegistrationForm(FlaskForm):
     submit = SubmitField('Register')
 
     def validate_email(self,field):
-        user = User(field.data)
+        user = User(email=field.data)
         if user.in_db is True:
             raise ValidationError('Email is already registered')
     
     def validate_username(self,field):
-        user = User('',username=field.data)
+        user = User(username=field.data)
         if user.in_db is True:
             raise ValidationError('Username is already in use.')
 

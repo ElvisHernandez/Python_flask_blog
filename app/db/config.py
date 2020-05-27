@@ -69,11 +69,12 @@ class CRUD:
             = %s''').format(sql.Identifier(table),
             sql.Identifier(primary_key))
             cursor.execute(sql_query,(value,))
-            matches = cursor.fetchall()[0]
+            matches = cursor.fetchall()
 
             cursor.close()
-            # print ('These are the so called matches: ',matches)
-            return matches
+            if len(matches) == 0:
+                return None
+            return matches[0]
         except psycopg2.Error as e:
             print ('something went wrong in the check function from the CRUD class: ',e)
             return None

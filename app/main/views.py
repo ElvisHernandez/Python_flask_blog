@@ -2,7 +2,7 @@ from datetime import datetime
 from flask import render_template, session, redirect, url_for,g,flash, current_app
 from . import main
 from .forms import NameForm
-from ..db.config import Config,Database,CRUD
+from ..db.config import Config,Database
 from threading import Thread
 from flask_mail import Message
 import os
@@ -14,15 +14,20 @@ def close_db(error):
     if hasattr(g, 'db'):
         g.db.close()
 
+@main.before_request
+def open_db_connection():
+    db = Database(Config)
+    db.get_db()
+
 @main.route('/', methods=['GET', 'POST'])
 def index():
     form = NameForm()
 
     if form.validate_on_submit():
+        print ('Is this coming out???????????????????????????????????????????????????')
         try:
-            db = Database(Config)
-            conn = db.get_db()
-            user = User('elvis@gmail.com')
+            user = User('elvis305@gmail.com','elvis',3,'123456')
+            # user.insert()
             
             if user.in_db is False:
                 session['known'] = False

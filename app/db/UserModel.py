@@ -3,19 +3,28 @@ from psycopg2 import sql
 from werkzeug.security import generate_password_hash,check_password_hash
 from ..email import send_email
 import os
-from .config import CRUD
+from .config import CRUD, Database,Config
 from flask_login import UserMixin
 from .. import login_manager
 
 @login_manager.user_loader
 def load_user(user_id):
-    return CRUD._check('users','id',user_id)
+    db = Database(Config)
+    conn = db.get_db()
+    # user_email = CRUD._check('users','id',user_id)[1]
+    user = User('',id=user_id)
+    if user.in_db is False:
+        return None
+    print ('This is inside the load_user function in the UserModel module')
+    conn.close()
+    return user
+    
 
 class User(UserMixin,CRUD):
     tablename = 'users'
     associations = {'roles':'one'}
-    def __init__(self,email,username=None,role_id=None,password=None):
-        self.id = None
+    def __init__(self,email,username=None,role_id=None,password='PROXY_PASSWORD',**kwargs):
+        self.id = kwargs.get('id',None)
         self.email = email
         self.username = username
         self.in_db = self._check_user()
@@ -24,7 +33,11 @@ class User(UserMixin,CRUD):
             self.password = password
     
     def _check_user(self):
-        user = self._check(self.tablename,'email',self.email)
+        if self.id is not None:
+            user = self._check(self.tablename,'id',self.id)
+        else:
+            user = self._check(self.tablename,'email',self.email)
+        print ('This is the user after checking: ',user)
         if user is None or len(user) == 0:
             return False
         else:

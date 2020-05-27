@@ -1,11 +1,12 @@
 from flask import render_template,redirect,request,url_for,flash,g
-from flask_login import login_user,logout_user,login_required
+from flask_login import login_user,logout_user,login_required,current_user
 from . import auth
 from ..db.UserModel import User
 from ..db.config import Database,Config
 from .forms import LoginForm
 from .forms import RegistrationForm
 from psycopg2 import Error
+from ..email import send_email
 
 @auth.teardown_request
 def close_db(error):
@@ -22,12 +23,7 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         try:
-            # db = Database(Config)
-            # conn = db.get_db()
             user = User(email=form.email.data)
-
-            # print ('''This is the result of calling the 
-            # verify_password method: ''',user.verify_password(form.password.data))
 
             if user.in_db is True and user.verify_password(form.password.data):
                 login_user(user,form.remember_me.data)
@@ -58,9 +54,23 @@ def register():
                         password = form.password.data,
                         username=form.username.data)
             user.insert()
-            flash('You can now login.')
-            return redirect(url_for('auth.login'))
+            token = user.generate_confirmation_token()
+            send_email(user.email,'Confirm Your Account',
+                'auth/email/confirm',user=user,token=token)
+
+            flash('A confirmation email has been sent to the email you provided.')
+            return redirect(url_for('main.index'))
         except Error as e:
             print ('There was an error registering the user: ',e)
     return render_template('auth/register.html',form=form)
     
+@auth.route('/confirm/<token>')
+@login_required
+def confirm(token):
+    if current_user.confirmed:
+        return redirect(url_for('main.index'))
+    if current_user.confirm(token):
+        flash('You have confirmed your account. Thanks!')
+    else:
+        flash('The confirmation link is invalid or has expired.')
+    return redirect(url_for('main.index'))

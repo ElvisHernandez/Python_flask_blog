@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import render_template, session, redirect, url_for,g,flash, current_app
+from flask import render_template, session, redirect, url_for,g,flash, current_app, request
 from . import main
 from .forms import NameForm
 from ..db.config import Config,Database

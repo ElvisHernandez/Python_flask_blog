@@ -43,10 +43,6 @@ class Database:
             finally:
                 logger.info('Connection opened successfully.')
 
-    # def __del__(self):
-    #     if self.conn is not None:
-    #         self.conn.close()
-
     def init_db(self):
         cursor = self.conn.cursor()
         cursor.execute(open('./db/schema.sql').read())
@@ -71,7 +67,7 @@ class CRUD:
             cursor.execute(sql_query,(value,))
             matches = cursor.fetchall()
             cursor.close()
-            
+
             if len(matches) == 0:
                 return None
             props = [desc[0] for desc in cursor.description]

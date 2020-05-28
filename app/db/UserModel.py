@@ -121,7 +121,7 @@ class User(UserMixin,CRUD):
         if self.in_db is True:
             user = self._update(self.tablename,self.id,prop_dict)
             if user is not None:
-                self.username = user[1]
+                self.username = user[1] # gotta come back to this 
 
     def delete(self):
         if self.in_db is True:

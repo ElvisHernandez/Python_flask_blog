@@ -3,6 +3,7 @@ from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import DataRequired,Length,Email,Regexp,EqualTo
 from wtforms import ValidationError
 from ..db.UserModel import User
+from flask_login import current_user
 
 class RegistrationForm(FlaskForm):
     email = StringField('Email',validators=[DataRequired(),Length(1,64),Email()])
@@ -30,3 +31,15 @@ class LoginForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
     remember_me = BooleanField('Keep me logged in')
     submit = SubmitField('Log In')
+
+class UpdatePasswordForm(FlaskForm):
+    old_password = PasswordField('Current Password',validators=[DataRequired()])
+
+    new_password = PasswordField('New Password',validators=[DataRequired(),
+        EqualTo('new_password_confirmation',message="Passwords must match")])
+    new_password_confirmation = PasswordField('New Password Confirmation',validators=[DataRequired()])
+    submit = SubmitField('Update Password')
+
+    def validate_old_password(self,field):
+        if not current_user.verify_password(field.data):
+            raise ValidationError('Current password does not match registered password.')

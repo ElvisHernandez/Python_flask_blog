@@ -32,7 +32,19 @@
       </ul>
       <ul class="nav navbar-nav navbar-right">
         {% if current_user.is_authenticated %}
-          <li><a href="{{ url_for('auth.logout') }}">Log Out</a></li>
+          <li class="dropdown show">
+            <a class="btn btn-secondary dropdown-toggle" href="#" role="button" 
+              id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" 
+              aria-expanded="false">
+              Dropdown link
+            </a>
+
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+              <a class="dropdown-item" href="{{ url_for('auth.logout') }}">Log Out</a><br/>
+              <a class="dropdown-item" href="{{ url_for('auth.update_password') }}">Update Password</a>
+            </div>
+          </li>
+          <!-- <li><a href="{{ url_for('auth.logout') }}">Log Out</a></li> -->
         {% else %}
           <li><a href="{{ url_for('auth.login')}}">Log In</a></li>
         {% endif %}

@@ -115,7 +115,7 @@ class User(UserMixin,CRUD):
         you want to update as keys, and their values as the values.
         e.g. prop_dict = {'username': 'TheNewUsername','role': 'TheNewRole'}'''
         for prop in prop_dict:
-            if prop == "password" or prop == "password_hash":
+            if prop == "password":
                 print ('You cannot update the password in this way')
                 return None
         if self.in_db is True:

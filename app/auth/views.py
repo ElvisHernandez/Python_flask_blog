@@ -3,8 +3,7 @@ from flask_login import login_user,logout_user,login_required,current_user
 from . import auth
 from ..db.UserModel import User
 from ..db.config import Database,Config
-from .forms import LoginForm
-from .forms import RegistrationForm
+from .forms import LoginForm,RegistrationForm,UpdatePasswordForm
 from psycopg2 import Error
 from ..email import send_email
 
@@ -101,3 +100,24 @@ def resend_confirmation():
         'auth/email/confirm',user=current_user,token=token)
     flash('A new confirmation email has been sent to you by email.')
     return redirect(url_for('main.index'))
+
+@auth.route('/update_password',methods=['GET','POST'])
+@login_required
+def update_password():
+    form = UpdatePasswordForm()
+    if form.validate_on_submit():
+        db = Database(Config)
+        g.db = db.connection()
+        try: 
+            print ('This is the current user: ',current_user.username)
+            current_user.password = form.new_password.data
+            new_prop = {'password_hash': current_user.password_hash}
+            current_user.update(new_prop)
+        except:
+            print ('Something went wrong while updating the password')
+        finally:
+            flash("You've sucessfully updated your password!")
+            g.db.close()
+            return redirect(url_for('main.index'))
+
+    return render_template('auth/update_password.html', form=form)

@@ -43,3 +43,13 @@ class UpdatePasswordForm(FlaskForm):
     def validate_old_password(self,field):
         if not current_user.verify_password(field.data):
             raise ValidationError('Current password does not match registered password.')
+
+class PasswordResetEmailForm(FlaskForm):
+    email = StringField('Email',validators=[DataRequired(),Length(1,64),Email()])
+    submit = SubmitField('Send password reset email')
+
+class ResetPasswordForm(FlaskForm):
+    new_password = PasswordField('New password',validators=[DataRequired(),
+        EqualTo('new_password_confirmation',message="Passwords must match.")])
+    new_password_confirmation = PasswordField('New password confirmation', validators=[DataRequired()])
+    submit = SubmitField('Reset Password')

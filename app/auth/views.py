@@ -3,7 +3,8 @@ from flask_login import login_user,logout_user,login_required,current_user
 from . import auth
 from ..db.UserModel import User
 from ..db.config import Database,Config
-from .forms import LoginForm,RegistrationForm,UpdatePasswordForm
+from .forms import LoginForm,RegistrationForm,\
+UpdatePasswordForm,PasswordResetEmailForm,ResetPasswordForm
 from psycopg2 import Error
 from ..email import send_email
 
@@ -109,7 +110,6 @@ def update_password():
         db = Database(Config)
         g.db = db.connection()
         try: 
-            print ('This is the current user: ',current_user.username)
             current_user.password = form.new_password.data
             new_prop = {'password_hash': current_user.password_hash}
             current_user.update(new_prop)
@@ -121,3 +121,45 @@ def update_password():
             return redirect(url_for('main.index'))
 
     return render_template('auth/update_password.html', form=form)
+
+@auth.route('/reset_password',methods=['GET','POST'])
+def send_reset_password_email():
+    form = PasswordResetEmailForm()
+    if form.validate_on_submit():
+        try:
+            user = User(email=form.email.data)
+            if user.in_db:
+                token = user.generate_confirmation_token()
+                send_email(user.email,'Password Reset Link',
+                'auth/email/reset_password',user=user,token=token)
+                flash('Your password reset email has been sent!')
+            else:
+                flash('No such email exists in our database')
+                return redirect(url_for('auth.send_reset_password_email'))
+        except:
+            print ('Something went wrong sending the password reset email')
+
+
+    return render_template('auth/password_email_reset.html',form=form)
+
+@auth.route('/reset_password/<username>/<token>',methods=['GET','POST'])
+def reset_password(username,token):
+    try:
+        form = ResetPasswordForm()
+        db = Database(Config)
+        g.db = db.connection()
+        user = User(username=username)
+        if form.validate_on_submit():
+            user.password = form.new_password.data
+            new_prop = {"password_hash":user.password_hash}
+            user.update(new_prop)
+            flash('Your password has been successfully reset!')
+            return redirect(url_for('main.index'))
+
+        if user.confirm(token):
+            return render_template('auth/reset_password.html',form=form)
+        else:
+            flash('Invalid or expired token.')
+            return redirect(url_for('auth.send_reset_password_email'))
+    except:
+        print ('Something went wrong resetting the password')

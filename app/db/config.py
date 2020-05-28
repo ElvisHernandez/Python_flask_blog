@@ -123,12 +123,12 @@ class CRUD:
             print ('Something went wrong in the _delete method in the CRUD class: ',e)
 
     @staticmethod
-    def _update(table,primary_key,prop_dict):
+    def _update(table,unique_id,prop_dict):
         try:
             conn = g.db 
             sql_string = ''
             fields = []
-            values = (*tuple(prop_dict.values()), primary_key) 
+            values = (*tuple(prop_dict.values()), unique_id) 
             for col in prop_dict:
                 sql_string += '{} = %s, '
                 fields.append(sql.Identifier(col))

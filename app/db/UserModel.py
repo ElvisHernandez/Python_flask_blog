@@ -28,7 +28,7 @@ class User(UserMixin,CRUD):
         self.id = columns.get('id',None)
         self.username = columns.get('username',None)
         self.email = columns.get('email',None)
-        self.role_id = columns.get('role_id',None)
+        self.role_id = columns.get('role_id',3)
         self.password = columns.get("password",'PROXY_PASSWORD')
         self.in_db = self._check_user()
 
@@ -114,6 +114,7 @@ class User(UserMixin,CRUD):
         '''prop_dict is a dictionary with the attributes/columns that 
         you want to update as keys, and their values as the values.
         e.g. prop_dict = {'username': 'TheNewUsername','role': 'TheNewRole'}'''
+        
         for prop in prop_dict:
             if prop == "password":
                 print ('You cannot update the password in this way')
@@ -121,7 +122,9 @@ class User(UserMixin,CRUD):
         if self.in_db is True:
             user = self._update(self.tablename,self.id,prop_dict)
             if user is not None:
-                self.username = user[1] # gotta come back to this 
+                for prop in prop_dict:
+                    if hasattr(self,prop):
+                        self.__dict__[prop] = prop_dict[prop]
 
     def delete(self):
         if self.in_db is True:

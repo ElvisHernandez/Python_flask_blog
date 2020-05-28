@@ -24,8 +24,8 @@ def index():
     form = NameForm()
     if form.validate_on_submit():
         try:
-            user = User(username='elvis')
-            
+            user = User(email="elvis@gmail.com")
+
             if user.in_db is False:
                 session['known'] = False
                 print('The user was not found')

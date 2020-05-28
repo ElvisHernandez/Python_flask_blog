@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block page_content %}
+    <div class='page-header'>
+        <h3>Hey there {{current_user.username}}.</h3>
+        <p>
+             To update your email, 
+            please enter your currently registered email in the form below 
+            and a confirmation link will be sent to the new email. Note: 
+            The link is only valid for an hour after being sent.
+        </p>
+        {{ wtf.quick_form(form) }}
+    </div>
+{% endblock %}

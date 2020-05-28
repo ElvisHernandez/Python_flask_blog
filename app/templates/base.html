@@ -40,8 +40,9 @@
             </a>
 
             <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-              <a class="dropdown-item" href="{{ url_for('auth.logout') }}">Log Out</a><br/>
-              <a class="dropdown-item" href="{{ url_for('auth.update_password') }}">Update Password</a>
+              <a class="dropdown-item btn btn-secondary" href="{{ url_for('auth.logout') }}">Log Out</a><br/>
+              <a class="dropdown-item btn btn-secondary" href="{{ url_for('auth.update_password') }}">Update Password</a>
+              <a class="dropdown-item btn btn-secondary" href="{{ url_for('auth.send_update_email') }}">Update Email</a>
             </div>
           </li>
           <!-- <li><a href="{{ url_for('auth.logout') }}">Log Out</a></li> -->

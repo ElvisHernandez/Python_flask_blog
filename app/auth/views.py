@@ -4,7 +4,7 @@ from . import auth
 from ..db.UserModel import User
 from ..db.config import Database,Config
 from .forms import LoginForm,RegistrationForm,\
-UpdatePasswordForm,PasswordResetEmailForm,ResetPasswordForm
+UpdatePasswordForm,PasswordResetEmailForm,ResetPasswordForm, EmailUpdateForm
 from psycopg2 import Error
 from ..email import send_email
 
@@ -138,8 +138,6 @@ def send_reset_password_email():
                 return redirect(url_for('auth.send_reset_password_email'))
         except:
             print ('Something went wrong sending the password reset email')
-
-
     return render_template('auth/password_email_reset.html',form=form)
 
 @auth.route('/reset_password/<username>/<token>',methods=['GET','POST'])
@@ -163,3 +161,28 @@ def reset_password(username,token):
             return redirect(url_for('auth.send_reset_password_email'))
     except:
         print ('Something went wrong resetting the password')
+
+@auth.route('/update_email',methods=['GET','POST'])
+@login_required
+def send_update_email():
+    form = EmailUpdateForm()
+    if form.validate_on_submit():
+        token = current_user.generate_confirmation_token()
+        send_email(form.email.data,'Email Update Confirmation Link',
+            'auth/email/update_email',new_email=form.email.data,token=token)
+        flash('A confirmation link was sent to the new email you entered.')
+        form.email.data = ''
+    return render_template('auth/Email_update.html',form=form)
+
+@auth.route('/update_email/<email>/<token>')
+@login_required
+def update_email(email,token):
+    if current_user.confirm(token):
+        db = Database(Config)
+        g.db = db.connection()
+        new_prop = {'email':email}
+        current_user.update(new_prop)
+        flash('Your email has been successfully updated!')
+    else:
+        flash('Invalid or expired token.')
+    return redirect(url_for('main.index'))

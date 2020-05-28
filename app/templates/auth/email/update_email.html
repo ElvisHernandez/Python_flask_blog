@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Email Update Link</title>
+</head>
+<body>
+    <p>Hey {{ current_user.username }},</p>
+    <p>
+      To update your email to this one, click on the following link:
+        {{ url_for('auth.update_email',email=new_email,token=token,_external=True) }}<br /><br />
+      Sincerely, <br />
+      TechyBlogs <br /><br />
+      Note: Replies to this email address are not monitored.
+    </p>
+</body>
+</html>

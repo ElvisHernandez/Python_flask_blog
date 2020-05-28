@@ -114,11 +114,9 @@ class User(UserMixin,CRUD):
         '''prop_dict is a dictionary with the attributes/columns that 
         you want to update as keys, and their values as the values.
         e.g. prop_dict = {'username': 'TheNewUsername','role': 'TheNewRole'}'''
-        
-        for prop in prop_dict:
-            if prop == "password":
-                print ('You cannot update the password in this way')
-                return None
+        if "password" in prop_dict:
+            print ('You cannot update the password in this way')
+            return None
         if self.in_db is True:
             user = self._update(self.tablename,self.id,prop_dict)
             if user is not None:

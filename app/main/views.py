@@ -24,7 +24,12 @@ def index():
     form = NameForm()
     if form.validate_on_submit():
         try:
-            user = User(email="elvis@gmail.com")
+            user = User(email="elvishernandezdev@gmail.com",username="Elvis",password="123456")
+
+            user.insert()
+
+
+
 
             if user.in_db is False:
                 session['known'] = False

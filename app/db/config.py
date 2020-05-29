@@ -83,6 +83,13 @@ class CRUD:
         try:
             conn = g.db
             cursor = conn.cursor()
+
+            if kwargs['role_id'] is None:
+                sql_role_default = '''SELECT id FROM roles WHERE "default" = TRUE;'''
+                cursor.execute(sql_role_default)
+                default_role = cursor.fetchone()[0]
+                kwargs['role_id'] = default_role
+
             values = tuple(kwargs.values())
             insert_params = ''
             insert_args = ''

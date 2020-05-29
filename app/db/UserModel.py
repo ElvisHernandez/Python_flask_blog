@@ -28,7 +28,7 @@ class User(UserMixin,CRUD):
         self.id = columns.get('id',None)
         self.username = columns.get('username',None)
         self.email = columns.get('email',None)
-        self.role_id = columns.get('role_id',3)
+        self.role_id = columns.get('role_id',None)
         self.password = columns.get("password",'PROXY_PASSWORD')
         self.in_db = self._check_user()
 

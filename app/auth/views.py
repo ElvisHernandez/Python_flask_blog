@@ -58,7 +58,6 @@ def register():
     if form.validate_on_submit():
         try:
             user = User(email=form.email.data,
-                        role_id = 3,
                         password = form.password.data,
                         username=form.username.data)
             user.insert()

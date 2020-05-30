@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import render_template, session, redirect, url_for,g,flash, current_app, request
+from flask import render_template,session,redirect,url_for,g,flash,current_app,request
 from . import main
 from .forms import NameForm
 from ..db.config import Config,Database
@@ -27,9 +27,6 @@ def index():
             user = User(email="elvishernandezdev@gmail.com",username="Elvis",password="123456")
 
             user.insert()
-
-
-
 
             if user.in_db is False:
                 session['known'] = False

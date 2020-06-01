@@ -9,24 +9,27 @@ import os
 from .. import mail
 from ..db.UserModel import User
 
+@main.before_request
+def open_db_connection():
+    db = Database(Config)
+    db.get_db()
+
 @main.teardown_request
 def close_db(error):
     if hasattr(g, 'db'):
         g.db.close()
 
-@main.before_request
-def open_db_connection():
-    db = Database(Config)
-    db.get_db()
 
 @main.route('/', methods=['GET', 'POST'])
 def index():
     form = NameForm()
     if form.validate_on_submit():
         try:
-            user = User(email="elvishernandezdev@gmail.com",username="Elvis",password="123456")
+            # user = User(email="elvishernandezdev@gmail.com",username="Elvis",password="123456")
+            # user.insert()
 
-            user.insert()
+            user = User(username='Elvis')
+
 
             if user.in_db is False:
                 session['known'] = False

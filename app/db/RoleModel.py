@@ -14,6 +14,24 @@ class Role(CRUD):
         self.name = columns.get('name',None)
         self.default = columns.get('default',False)
         self.permissions = columns.get('permissions',0)
+        self.in_db = self._check_role()
+
+    def _check_role(self):
+        if self.id is not None:
+            role_dict = self._check(self.tablename,'id',self.id)
+        elif self.name is not None:
+            role_dict = self._check(self.tablename,'name',self.name)
+        else:
+            print ('No unique identifier was provided to check for role in database.')
+            return False
+        if role_dict is None:
+            return False
+        else:
+            self.id = role_dict['id']
+            self.name = role_dict['name']
+            self.default = role_dict['default']
+            self.permissions = role_dict['permissions']
+            return True
 
     def add_permission(self,perm):
         if not self.has_permission(perm):

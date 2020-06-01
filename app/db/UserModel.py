@@ -4,7 +4,8 @@ from werkzeug.security import generate_password_hash,check_password_hash
 from ..email import send_email
 import os
 from .config import CRUD, Database,Config
-from flask_login import UserMixin
+from .RoleModel import Role,Permissions
+from flask_login import UserMixin, AnonymousUserMixin
 from .. import login_manager
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
@@ -15,8 +16,8 @@ def load_user(user_id):
     user = User(id=user_id)
     if user.in_db is False:
         return None
-    print ('This is inside the load_user function in the UserModel module')
-    conn.close()
+    # print ('This is inside the load_user function in the UserModel module')
+    # conn.close()
     return user
     
 
@@ -74,18 +75,28 @@ class User(UserMixin,CRUD):
     
     def role(self):
         try:
-            conn = g.db
-            cursor = conn.cursor()
-            sql_join = sql.SQL('''SELECT name FROM users
-            JOIN roles ON users.role_id = roles.id
-            WHERE users.username = %s''')
-            cursor.execute(sql_join,(self.username,))
-            role_name = cursor.fetchall()[0][0]
-            return role_name
+            role = Role(id=self.role_id)
+            return role
         
         except: 
             print ('Something went wrong in the role instance method')
             return None
+    
+    def can(self,perm):
+        role = self.role()
+        if role is not None:
+            return role.has_permission(perm)
+        else:
+            print ('Could not find an associated role in the database.')
+            return False
+
+    def is_administrator(self):
+        role = self.role()
+        if role is not None:
+            return role.has_permission(Permissions.ADMIN)
+        else:
+            print ('Could not find an associated role in the database.')
+            return False
 
     @property
     def password(self): 
@@ -129,3 +140,12 @@ class User(UserMixin,CRUD):
             self._delete(self.tablename,self.id)
         else:
             print ('The user is not in the database')
+
+class AnonymousUser(AnonymousUserMixin):
+    def can(self,perm):
+        return False
+    
+    def is_administrator(self):
+        return False
+
+login_manager.anonymous_user = AnonymousUser

@@ -33,6 +33,14 @@ def index():
         try:
             # user = User(email="elvishernandezdev@gmail.com",username="Elvis",password="123456")
             # user.insert()
+            conn = g.db
+
+            cursor = conn.cursor()
+            sql_query = '''SELECT id,name FROM roles;'''
+            cursor.execute(sql_query)
+            results = cursor.fetchall()
+
+            print ('These are the results of the query: ',results[0][1])
 
             user = User(username='Elvis')
             print ('The user is a member since: ',user.last_seen)

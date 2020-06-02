@@ -57,13 +57,19 @@ class Database:
 
 class CRUD:
     @staticmethod
-    def _check(table,primary_key,value):
+    def _check(table,unique_key,value):
         try:
             conn = g.db
             cursor = conn.cursor()
-            sql_query = sql.SQL('''SELECT * FROM {} WHERE {}
-            = %s''').format(sql.Identifier(table),
-            sql.Identifier(primary_key))
+            if type(value) is int:
+                sql_query = sql.SQL('''SELECT * FROM {} WHERE {}
+                    = %s''').format(sql.Identifier(table),
+                    sql.Identifier(unique_key))
+            else:
+                sql_query = sql.SQL('''SELECT * FROM {} WHERE lower({})
+                    = %s''').format(sql.Identifier(table),
+                    sql.Identifier(unique_key))
+                
             cursor.execute(sql_query,(value,))
             matches = cursor.fetchall()
             cursor.close()

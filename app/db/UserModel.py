@@ -1,9 +1,10 @@
 from flask import g,current_app
+from datetime import datetime
 from psycopg2 import sql
 from werkzeug.security import generate_password_hash,check_password_hash
 from ..email import send_email
 import os
-from .config import CRUD, Database,Config
+from .config import CRUD,Database,Config
 from .RoleModel import Role,Permissions
 from flask_login import UserMixin, AnonymousUserMixin
 from .. import login_manager
@@ -31,7 +32,17 @@ class User(UserMixin,CRUD):
         self.email = columns.get('email',None)
         self.role_id = columns.get('role_id',None)
         self.password = columns.get("password",'PROXY_PASSWORD')
+        self.name = columns.get("name",None)
+        self.location = columns.get('location',None)
+        self.about_me = columns.get('about_me',None)
+        self.member_since = columns.get('member_since',None)
+        self.last_seen = columns.get('last_seen',None)
         self.in_db = self._check_user()
+
+    def ping(self):
+        self.last_seen = datetime.utcnow()
+        new_prop = {'last_seen':self.last_seen}
+        self.update(new_prop)
 
     def generate_confirmation_token(self, expiration=3600):
         s = Serializer(current_app.config['SECRET_KEY'],expiration)
@@ -53,7 +64,7 @@ class User(UserMixin,CRUD):
     
     def _check_user(self):
         if self.id is not None:
-            user_dict = self._check(self.tablename,'id',self.id)
+            user_dict = self._check(self.tablename,'id',int(self.id))
         elif self.username is not None:
             user_dict = self._check(self.tablename,'username',self.username)
         elif self.email is not None:
@@ -70,6 +81,11 @@ class User(UserMixin,CRUD):
             self.password_hash = user_dict['password_hash']
             self.confirmed = user_dict['confirmed']
             self.role_id = user_dict['role_id']
+            self.name = user_dict.get("name",None)
+            self.location = user_dict.get('location',None)
+            self.about_me = user_dict.get('about_me',None)
+            self.member_since = user_dict.get('member_since',None)
+            self.last_seen = user_dict.get('last_seen',None)
             return True
     
     

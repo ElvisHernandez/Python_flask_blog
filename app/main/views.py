@@ -36,10 +36,7 @@ def index():
             user = User(username='Elvis')
             print ('The user is a member since: ',user.last_seen)
             user.ping()
-
             print ('This is the new last_seen user field: ',user.last_seen)
-
-
 
             if user.in_db is False:
                 session['known'] = False
@@ -66,9 +63,9 @@ def index():
 
 @main.route('/user/<username>')
 def user(username):
-    print ('This is the usernname thats being passed throug the view function: ',username)
+    # print ('This is the usernname thats being passed throug the view function: ',username)
     user = User(username=username)
     if user.in_db is False:
         return render_template('404.html')
     else:
-        return render_template('user.html',user=user)
+        return render_template('user.html',user=user,current_time=datetime.utcnow())

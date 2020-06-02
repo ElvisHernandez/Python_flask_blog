@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS roles
  location VARCHAR(64),
  about_me TEXT,
  member_since DATE NOT NULL DEFAULT CURRENT_DATE,
- last_seen DATE NOT NULL DEFAULT CURRENT_DATE,
+ last_seen TIMESTAMP NOT NULL DEFAULT now(),
  role_id INT REFERENCES roles (id));
 
  CREATE UNIQUE INDEX user_username_ci_idx ON users (lower(username));

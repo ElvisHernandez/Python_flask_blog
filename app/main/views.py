@@ -1,10 +1,11 @@
 from datetime import datetime
 from flask import render_template,session,redirect,url_for,g,flash,current_app,request
 from . import main
-from .forms import NameForm
+from .forms import NameForm,EditProfileForm
 from ..db.config import Config,Database
 from ..db.RoleModel import Permissions
 from threading import Thread
+from flask_login import login_required,current_user
 from flask_mail import Message
 import os
 from .. import mail
@@ -64,8 +65,30 @@ def index():
 @main.route('/user/<username>')
 def user(username):
     # print ('This is the usernname thats being passed throug the view function: ',username)
-    user = User(username=username)
+    user = User(username=username.lower())
     if user.in_db is False:
         return render_template('404.html')
     else:
         return render_template('user.html',user=user,current_time=datetime.utcnow())
+
+@main.route('/edit-profile',methods=['GET','POST'])
+@login_required
+def edit_profile():
+    form = EditProfileForm()
+    if form.validate_on_submit():
+        current_user.name = form.name.data 
+        current_user.location = form.location.data
+        current_user.about_me = form.about_me.data
+        new_props = {
+            'name': current_user.name,
+            'location': current_user.location,
+            'about_me': current_user.about_me
+            }
+        current_user.update(new_props)
+        flash('Your profile has been updated!')
+        return redirect(url_for('.user',username=current_user.username))
+    form.name.data = current_user.name
+    form.location.data = current_user.location
+    form.about_me.data = current_user.about_me
+    return render_template('edit_profile.html',form=form)
+

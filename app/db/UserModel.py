@@ -36,14 +36,26 @@ class User(UserMixin,CRUD):
         self.about_me = columns.get('about_me',None)
         self.member_since = columns.get('member_since',None)
         self.last_seen = columns.get('last_seen',None)
+        self.avatar_hash = columns.get('avatar_hash',None)
         self.in_db = self._check_user()
 
+        if self.email is not None and self.avatar_hash is None:
+            self.avatar_hash = self.gravatar_hash()
+
+    def gravatar_hash(self):
+        return hashlib.md5(self.email.lower().encode('utf-8')).hexdigest()
+
     def gravatar(self,size=100,default='identicon',rating='g'):
-        url = 'https://secure.gravatar.com/avatar'
-        hash = hashlib.md5(self.email.lower().encode('utf-8')).hexdigest()
+        if request.is_secure:
+            url = 'https://secure.gravatar.com/avatar'
+        else:
+            url = 'http://www.gravatar.com/avatar'
+        hash = self.avatar_hash or self.gravatar_hash()
         return '{url}/{hash}?s={size}&d={default}&r={rating}'.format(
             url=url, hash=hash, size=size, default=default, rating=rating)
-            
+
+    
+
     def ping(self):
         self.last_seen = datetime.utcnow()
         new_prop = {'last_seen':self.last_seen}
@@ -91,6 +103,7 @@ class User(UserMixin,CRUD):
             self.about_me = user_dict.get('about_me',None)
             self.member_since = user_dict.get('member_since',None)
             self.last_seen = user_dict.get('last_seen',None)
+            self.avatar_hash = user_dict.get('avatar_hash',None)
             return True
     
     
@@ -149,6 +162,11 @@ class User(UserMixin,CRUD):
         if "password" in prop_dict:
             print ('You cannot update the password in this way')
             return None
+        if "email" in prop_dict:
+            self.email = prop_dict['email']
+            self.avatar_hash = self.gravatar_hash()
+            prop_dict['avatar_hash'] = self.avatar_hash
+
         if self.in_db is True:
             user = self._update(self.tablename,self.id,prop_dict)
             if user is not None:

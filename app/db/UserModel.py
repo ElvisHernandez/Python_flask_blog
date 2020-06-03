@@ -54,7 +54,9 @@ class User(UserMixin,CRUD):
         return '{url}/{hash}?s={size}&d={default}&r={rating}'.format(
             url=url, hash=hash, size=size, default=default, rating=rating)
 
-    
+    def posts(self):
+        if self.in_db:
+            Post.posts_by_author(self.id)
 
     def ping(self):
         self.last_seen = datetime.utcnow()
@@ -188,3 +190,4 @@ class AnonymousUser(AnonymousUserMixin):
         return False
 
 login_manager.anonymous_user = AnonymousUser
+from .PostModel import Post

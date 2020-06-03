@@ -15,7 +15,7 @@ from ..db.PostModel import Post
 
 @main.app_context_processor
 def inject_permissions():
-    return dict(Permissions=Permissions,Post=Post)
+    return dict(Permissions=Permissions,User=User)
 
 
 @main.before_request
@@ -38,6 +38,9 @@ def index():
 
         return redirect(url_for('.index'))
     posts = Post.get_all_posts()
+
+
+
     return render_template('index.html', form=form,posts=posts)
 
 
@@ -48,6 +51,7 @@ def user(username):
     if user.in_db is False:
         return render_template('404.html')
     else:
+
         return render_template('user.html',user=user,current_time=datetime.utcnow())
 
 @main.route('/edit-profile',methods=['GET','POST'])

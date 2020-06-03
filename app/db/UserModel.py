@@ -146,7 +146,7 @@ class User(UserMixin,CRUD):
     def insert(self):
         if self.in_db is False:
             primary_key = self._insert(self.tablename,email=self.email, username=self.username,
-            role_id=self.role_id,password_hash=self.password_hash)
+            role_id=self.role_id,password_hash=self.password_hash,avatar_hash=self.avatar_hash)
             if primary_key is not None:
                 self.id = primary_key
                 self.in_db = True

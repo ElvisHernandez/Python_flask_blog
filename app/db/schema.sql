@@ -1,4 +1,4 @@
--- Roles table
+-- Role Model
 CREATE TABLE IF NOT EXISTS roles
 (id SERIAL PRIMARY KEY,
  name VARCHAR(64) UNIQUE,
@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS roles
  INSERT INTO roles (name,permissions) VALUES ('Moderator',1+2+4+8);
  INSERT INTO roles (name,"default",permissions) VALUES ('User',TRUE,1+2+4);
  
+ -- User Model
  CREATE TABLE IF NOT EXISTS users
  (id SERIAL PRIMARY KEY,
  email VARCHAR(64) UNIQUE,
@@ -34,3 +35,9 @@ CREATE TABLE IF NOT EXISTS roles
  CREATE UNIQUE INDEX user_username_ci_idx ON users (lower(username));
  CREATE UNIQUE INDEX user_email_ci_idx ON users (lower(email));
 
+-- Blog Post Model
+CREATE TABLE IF NOT EXISTS posts 
+(id SERIAL PRIMARY KEY,
+body TEXT,
+time_stamp TIMESTAMP NOT NULL DEFAULT now(),
+author_id INT REFERENCES users (id));

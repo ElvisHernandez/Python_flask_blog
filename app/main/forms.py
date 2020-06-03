@@ -43,7 +43,6 @@ class EditProfileAdminForm(FlaskForm):
         if field.data != self.user.username and u.in_db:
             raise ValidationError('Username already in use.')
         
-
     @staticmethod
     def _get_role_choices():
         try:
@@ -56,3 +55,7 @@ class EditProfileAdminForm(FlaskForm):
         except:
             print ('Something went wrong in the get_role_choices method')
             return None
+    
+class PostForm(FlaskForm):
+    body = TextAreaField("What's on your mind?",validators=[DataRequired()])
+    submit = SubmitField('Submit')

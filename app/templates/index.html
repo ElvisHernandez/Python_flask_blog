@@ -18,28 +18,5 @@
     {{ wtf.quick_form(form) }} 
   {% endif %}
 </div>
-<div class="post-tabs">
-  <ul class="posts">
-    {% for post in posts %}
-      {% set user = User(id=post['author_id']) %}
-      <li class="post">
-        <div class="profile-thumbnail">
-          <a href="{{ url_for('.user',username=user.username) }}">
-            <img class="img-rounded profile-thumbnail" 
-              src="{{ user.gravatar(size=40) }}">
-          </a>
-        </div>
-        <div class="post-content">
-          <div class="post-date">{{ moment(post['time_stamp']).fromNow() }}</div>
-          <div class="post-author">
-            <a href="{{ url_for('.user',username=user.username) }}">
-              {{ user.username }}
-            </a>
-          </div>
-          <div class="post-body">{{ post['body'] }}</div>
-        </div>
-      </li>
-    {% endfor %}
-  </ul>
-</div>
+{% include '_posts.html' %}
 {% endblock %}

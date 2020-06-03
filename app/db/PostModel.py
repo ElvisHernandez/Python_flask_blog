@@ -36,10 +36,16 @@ class Post(CRUD):
         try:
             conn = g.db
             cursor = conn.cursor()
-            sql_query = 'SELECT * FROM posts WHERE author_id = %s;'
+            sql_query = '''SELECT * FROM posts WHERE author_id = %s 
+                                    ORDER BY time_stamp DESC;'''
             cursor.execute(sql_query,(author_id,))
             posts = cursor.fetchall()
-            print ('These are all the posts by {}: {}'.format(author_id,posts))
+            if len(posts) != 0:
+                props = [desc[0] for desc in cursor.description]
+                posts_list = []
+                for post in posts:
+                    posts_list.append(dict(zip(props,post)))
+                return posts_list
             return posts
         except:
             print ("Something went wrong trying to get author {}'s id".format(author_id))

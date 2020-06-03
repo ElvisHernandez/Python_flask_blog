@@ -51,8 +51,8 @@ def user(username):
     if user.in_db is False:
         return render_template('404.html')
     else:
-
-        return render_template('user.html',user=user,current_time=datetime.utcnow())
+        posts = user.posts()
+        return render_template('user.html',user=user,current_time=datetime.utcnow(),posts=posts)
 
 @main.route('/edit-profile',methods=['GET','POST'])
 @login_required

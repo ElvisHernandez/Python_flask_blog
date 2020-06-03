@@ -56,7 +56,10 @@ class User(UserMixin,CRUD):
 
     def posts(self):
         if self.in_db:
-            Post.posts_by_author(self.id)
+            posts = Post.posts_by_author(self.id)
+            return posts
+        else:
+            return []
 
     def ping(self):
         self.last_seen = datetime.utcnow()

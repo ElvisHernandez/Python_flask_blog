@@ -1,9 +1,10 @@
-from flask import g,current_app
+from flask import g,current_app,request
 from datetime import datetime
 from psycopg2 import sql
 from werkzeug.security import generate_password_hash,check_password_hash
 from ..email import send_email
 import os
+import hashlib
 from .config import CRUD,Database,Config
 from .RoleModel import Role,Permissions
 from flask_login import UserMixin, AnonymousUserMixin
@@ -17,8 +18,6 @@ def load_user(user_id):
     user = User(id=user_id)
     if user.in_db is False:
         return None
-    # print ('This is inside the load_user function in the UserModel module')
-    # conn.close()
     return user
     
 
@@ -39,6 +38,12 @@ class User(UserMixin,CRUD):
         self.last_seen = columns.get('last_seen',None)
         self.in_db = self._check_user()
 
+    def gravatar(self,size=100,default='identicon',rating='g'):
+        url = 'https://secure.gravatar.com/avatar'
+        hash = hashlib.md5(self.email.lower().encode('utf-8')).hexdigest()
+        return '{url}/{hash}?s={size}&d={default}&r={rating}'.format(
+            url=url, hash=hash, size=size, default=default, rating=rating)
+            
     def ping(self):
         self.last_seen = datetime.utcnow()
         new_prop = {'last_seen':self.last_seen}

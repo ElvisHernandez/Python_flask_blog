@@ -13,6 +13,19 @@ class Post(CRUD):
         self.in_db = False
 
     @staticmethod
+    def count():
+        try:
+            conn = g.db
+            cursor = conn.cursor()
+            sql_query = 'SELECT COUNT(*) FROM posts;'
+            cursor.execute(sql_query)
+            count = cursor.fetchone()[0]
+            return count
+        except:
+            print ('Somthing went wrong while getting the posts count')
+            return None
+
+    @staticmethod
     def _dict_transform(posts,cursor):
         if len(posts) != 0:
             props = [desc[0] for desc in cursor.description]

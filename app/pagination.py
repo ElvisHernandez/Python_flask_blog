@@ -4,9 +4,16 @@ class Pagination:
     def __init__(self,**kwargs):
         self.pages = kwargs.get("pages",None)
         self.page = kwargs.get("page",None)
-        self.has_next = kwargs.get("has_next",False)
-        self.has_prev = kwargs.get("has_prev",False)
-    
+        if self.page == self.pages:
+            self.has_next = False
+        else:
+            self.has_next = True
+
+        if self.page == 1:
+            self.has_prev = False
+        else:
+            self.has_prev = True
+
     def iter_pages(self,left_edge=2,left_current=2,right_current=5,right_edge=2):
         pages = []
         
@@ -33,7 +40,7 @@ class Pagination:
 
         # effective right current
         if self.page + right_current > self.pages - right_edge:
-            eff_rc = [self.page]
+            eff_rc = [page for page in range(self.page,self.pages-right_edge+1)]
         else:
             eff_rc = [page for page in range(self.page,self.page+right_current+1)]
 
@@ -42,7 +49,7 @@ class Pagination:
 
         # effective right edge
         if self.pages - self.page < right_edge:
-            eff_re = [page for page in range(self.page+1,self.pages+1)]
+            eff_re = [page for page in range(self.page,self.pages+1)]
         else:
             eff_re = [page for page in range(self.pages-right_edge+1,self.pages+1)]
         

@@ -4,11 +4,13 @@ from . import main
 from .forms import NameForm,EditProfileForm,EditProfileAdminForm,PostForm
 from ..db.config import Config,Database
 from ..db.RoleModel import Permissions
+from ..pagination import Pagination
 from threading import Thread
 from flask_login import login_required,current_user
 from flask_mail import Message
 from ..decorators import admin_required
 import os
+from math import floor
 from .. import mail
 from ..db.UserModel import User
 from ..db.PostModel import Post
@@ -35,11 +37,21 @@ def index():
     if current_user.can(Permissions.WRITE) and form.validate_on_submit():
         post = Post(body=form.body.data,author_id=current_user.id)
         post.insert()
+        return redirect(url_for('.index'))
 
+    posts_per_page = current_app.config.get('POSTS_PER_PAGE',None)
+    total_posts = Post.count()
+    if total_posts is not None:
+        total_pages = floor(total_posts/posts_per_page)
+    else:
+        flash('Sorry about that, there seems to have been a momentary error.')
         return redirect(url_for('.index'))
     page = request.args.get('page',1,type=int)
-    posts = Post.posts_by_page(page)
-    return render_template('index.html', form=form,posts=posts)
+    posts = Post.posts_by_page(page,posts_per_page)
+    pagination = Pagination(pages=total_pages,page=page)
+    
+    
+    return render_template('index.html',form=form,posts=posts,pagination=pagination)
 
 
 @main.route('/user/<username>')

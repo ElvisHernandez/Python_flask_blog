@@ -37,10 +37,8 @@ def index():
         post.insert()
 
         return redirect(url_for('.index'))
-    posts = Post.get_all_posts()
-
-
-
+    page = request.args.get('page',1,type=int)
+    posts = Post.posts_by_page(page)
     return render_template('index.html', form=form,posts=posts)
 
 

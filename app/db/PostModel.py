@@ -13,26 +13,42 @@ class Post(CRUD):
         self.in_db = False
 
     @staticmethod
-    def get_all_posts():
+    def _dict_transform(posts,cursor):
+        if len(posts) != 0:
+            props = [desc[0] for desc in cursor.description]
+            posts_list = []
+            for post in posts:
+                posts_list.append(dict(zip(props,post)))
+            return posts_list
+        return posts
+
+    @classmethod
+    def get_all_posts(cls):
         try:
             conn = g.db
             cursor = conn.cursor()
             sql_query = 'SELECT * FROM posts ORDER BY time_stamp DESC;'
             cursor.execute(sql_query)
             posts = cursor.fetchall()
-            if len(posts) != 0:
-                props = [desc[0] for desc in cursor.description]
-                posts_list = []
-                for post in posts:
-                    posts_list.append(dict(zip(props,post)))
-                return posts_list
-            return posts
+            return cls._dict_transform(posts,cursor)
         except:
             print ('Something went wrong fetching all the posts in the get_all_posts method.')
             return None
-        
-    @staticmethod
-    def posts_by_author(author_id):
+
+    @classmethod
+    def posts_by_page(cls,page,posts_per_page=10):
+        try:
+            conn = g.db
+            cursor = conn.cursor()
+            sql_query = 'SELECT * FROM posts OFFSET %s LIMIT %s;'
+            cursor.execute(sql_query,(posts_per_page*page,posts_per_page))
+            posts = cursor.fetchall()
+            return cls._dict_transform(posts,cursor)
+        except:
+            print ('Something went wrong retrieving the posts by page')
+    
+    @classmethod
+    def posts_by_author(cls,author_id):
         try:
             conn = g.db
             cursor = conn.cursor()
@@ -40,13 +56,7 @@ class Post(CRUD):
                                     ORDER BY time_stamp DESC;'''
             cursor.execute(sql_query,(author_id,))
             posts = cursor.fetchall()
-            if len(posts) != 0:
-                props = [desc[0] for desc in cursor.description]
-                posts_list = []
-                for post in posts:
-                    posts_list.append(dict(zip(props,post)))
-                return posts_list
-            return posts
+            return cls._dict_transform(posts,cursor)
         except:
             print ("Something went wrong trying to get author {}'s id".format(author_id))
             return None

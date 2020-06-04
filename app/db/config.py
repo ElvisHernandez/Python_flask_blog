@@ -59,7 +59,6 @@ class CRUD:
     @staticmethod
     def _check(table,unique_key,value):
         try:
-            print ('This is coming out first of all')
             conn = g.db
             cursor = conn.cursor()
             if type(value) is int:

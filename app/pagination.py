@@ -26,7 +26,6 @@ class Pagination:
             eff_le = [page for page in range(1,left_edge+1)]
 
         pages += eff_le
-        pages.append(None)
         
         # effective left current
         if self.page - left_current <= 0:
@@ -43,9 +42,13 @@ class Pagination:
             eff_rc = [page for page in range(self.page,self.pages-right_edge+1)]
         else:
             eff_rc = [page for page in range(self.page,self.page+right_current+1)]
+        
+        # if eff_le end eff_re start points and end points are not consecutive then 
+        # insert None value for pagination separation
+        if len(eff_le) != 0 and len(eff_lc) != 0 and eff_le[-1] != eff_lc[0]-1:
+                pages.append(None)
 
         pages += eff_lc + eff_rc
-        pages.append(None)
 
         # effective right edge
         if self.pages - self.page < right_edge:
@@ -53,6 +56,9 @@ class Pagination:
         else:
             eff_re = [page for page in range(self.pages-right_edge+1,self.pages+1)]
         
-        pages += eff_re
+        # same as above
+        if len(eff_rc) != 0 and len(eff_re) != 0 and eff_rc[-1] != eff_re[0]-1:
+            pages.append(None)
         
+        pages += eff_re
         return pages

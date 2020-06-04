@@ -11,7 +11,7 @@ from flask_mail import Message
 from ..decorators import admin_required
 import os
 from math import floor
-from .. import mail
+from .. import mail,login_manager
 from ..db.UserModel import User
 from ..db.PostModel import Post
 
@@ -20,7 +20,7 @@ def inject_permissions():
     return dict(Permissions=Permissions,User=User)
 
 
-@main.before_request
+@main.before_app_request
 def open_db_connection():
     db = Database(Config)
     db.get_db()
@@ -56,7 +56,6 @@ def index():
 
 @main.route('/user/<username>')
 def user(username):
-    # print ('This is the usernname thats being passed throug the view function: ',username)
     user = User(username=username.lower())
     if user.in_db is False:
         return render_template('404.html')

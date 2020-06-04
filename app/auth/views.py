@@ -13,11 +13,6 @@ def close_db(error):
     if hasattr(g, 'db'):
         g.db.close()
 
-@auth.before_request
-def init_db_session():
-    db = Database(Config)
-    db.get_db()
-
 @auth.before_app_request
 def before_request():
     if current_user.is_authenticated:
@@ -26,7 +21,6 @@ def before_request():
             and request.blueprint != 'auth' \
             and request.endpoint != 'static':
             return redirect(url_for('auth.unconfirmed'))
-
 
 @auth.route('/login', methods=['GET','POST'])
 def login():
@@ -75,8 +69,6 @@ def register():
 @auth.route('/confirm/<token>')
 @login_required
 def confirm(token):
-    db = Database(Config)
-    g.db = db.connection()
     if current_user.confirmed:
         return redirect(url_for('main.index'))
     if current_user.confirm(token):
@@ -107,8 +99,6 @@ def resend_confirmation():
 def update_password():
     form = UpdatePasswordForm()
     if form.validate_on_submit():
-        db = Database(Config)
-        g.db = db.connection()
         try: 
             current_user.password = form.new_password.data
             new_prop = {'password_hash': current_user.password_hash}
@@ -144,8 +134,6 @@ def send_reset_password_email():
 def reset_password(username,token):
     try:
         form = ResetPasswordForm()
-        db = Database(Config)
-        g.db = db.connection()
         user = User(username=username)
         if form.validate_on_submit():
             user.password = form.new_password.data
@@ -178,8 +166,6 @@ def send_update_email():
 @login_required
 def update_email(email,token):
     if current_user.confirm(token):
-        db = Database(Config)
-        g.db = db.connection()
         new_prop = {'email':email}
         current_user.update(new_prop)
         flash('Your email has been successfully updated!')

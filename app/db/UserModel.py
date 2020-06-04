@@ -13,13 +13,10 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 @login_manager.user_loader
 def load_user(user_id):
-    db = Database(Config)
-    conn = db.get_db()
     user = User(id=user_id)
     if user.in_db is False:
         return None
     return user
-    
 
 class User(UserMixin,CRUD):
     tablename = 'users'

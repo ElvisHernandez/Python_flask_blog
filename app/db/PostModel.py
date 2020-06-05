@@ -2,6 +2,8 @@ from .config import CRUD
 from flask import g
 from datetime import datetime
 from .UserModel import User
+from markdown import markdown
+import bleach
 
 class Post(CRUD):
     tablename = 'posts'
@@ -24,6 +26,16 @@ class Post(CRUD):
         except:
             print ('Somthing went wrong while getting the posts count')
             return None
+
+    @staticmethod
+    def body_html_transform(value):
+        allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
+                        'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul',
+                        'h1', 'h2', 'h3', 'p']
+        body_html = bleach.linkify(bleach.clean(
+            markdown(value,output_format='html'),
+            tags=allowed_tags,strip=True))
+        return body_html
 
     @staticmethod
     def _dict_transform(posts,cursor):
@@ -77,10 +89,12 @@ class Post(CRUD):
     def insert(self):
         if self.in_db is False:
             primary_key = self._insert(self.tablename,body=self.body,
-                time_stamp=self.time_stamp,author_id=self.author_id)
+                time_stamp=self.time_stamp,author_id=self.author_id,
+                body_html=self.body_html_transform(self.body))
             if primary_key is not None:
                 self.id = primary_key
                 self.in_db = True
+
         else:
             print ('The post was already in the database.')
 

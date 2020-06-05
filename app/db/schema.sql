@@ -39,5 +39,6 @@ CREATE TABLE IF NOT EXISTS roles
 CREATE TABLE IF NOT EXISTS posts 
 (id SERIAL PRIMARY KEY,
 body TEXT,
+body_html TEXT,
 time_stamp TIMESTAMP NOT NULL DEFAULT now(),
-author_id INT REFERENCES users (id));
+author_id INT REFERENCES users (id) ON DELETE CASCADE);

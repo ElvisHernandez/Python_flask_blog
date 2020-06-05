@@ -118,3 +118,11 @@ def edit_profile_admin(primary_id):
     form.location.data = user.location
     form.about_me.data = user.about_me
     return render_template('edit_profile.html',form=form,user=user)
+
+@main.route('/post/<int:id>')
+def post(id):
+    post = Post().get_post(id)
+    if post is None:
+        flash('That post does not exist in the database')
+        return redirect(url_for('.index'))
+    return render_template('post.html',posts=[post])

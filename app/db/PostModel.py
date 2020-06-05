@@ -13,6 +13,20 @@ class Post(CRUD):
         self.time_stamp = datetime.utcnow()
         self.author_id = columns.get('author_id',None)
         self.in_db = False
+    
+    def get_post(self,primary_key=None):
+        if primary_key is not None:
+            post_dict = self._check(self.tablename,'id', primary_key)
+        else:
+            print ('A valid post id must be given.')
+            return None
+        if post_dict is not None:
+            self.id = post_dict['id']
+            self.body = post_dict['body']
+            self.time_stamp = post_dict['time_stamp']
+            self.author_id = post_dict['author_id']
+            self.in_db = True
+            return self
 
     @staticmethod
     def count():

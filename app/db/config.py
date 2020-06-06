@@ -18,15 +18,15 @@ class Config:
     'This is where the SQL queries live'
     SQL_QUERIES_FOLDER = os.environ.get('SQL_QUERIES_FOLDER')
 
-    TABLES = ['users,roles']
+    TABLES = ['users','roles','posts']
 
 
-class Database:
-    def __init__(self, config):
-        self.username = config.DATABASE_USERNAME
-        self.dbname = config.DATABASE_NAME
+class Database(Config):
+    def __init__(self):
+        self.username = self.DATABASE_USERNAME
+        self.dbname = self.DATABASE_NAME
+        self.tables = self.TABLES
         self.conn = None
-        self.tables = config.TABLES
 
     def connection(self):
         "connect to a postgres database"
@@ -44,6 +44,7 @@ class Database:
                 logger.info('Connection opened successfully.')
 
     def init_db(self):
+        'creates the database tables via the schema.sql file'
         cursor = self.conn.cursor()
         cursor.execute(open('./db/schema.sql').read())
         self.conn.commit()

@@ -1,7 +1,7 @@
 import unittest
 from flask import g
 from app import create_app
-from app.db.config import Database,Config
+from app.db.config import Database
 from app.db.UserModel import User
 import time
 
@@ -11,7 +11,7 @@ class UserModelTestCase(unittest.TestCase):
         self.app = create_app('testing')
         self.app_context = self.app.app_context()
         self.app_context.push()
-        db = Database(Config)
+        db = Database()
         setattr(g,'db',db.connection())
 
     def tearDown(self):

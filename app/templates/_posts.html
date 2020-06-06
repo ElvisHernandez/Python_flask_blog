@@ -1,6 +1,7 @@
 
 <div class="post-tabs">
   <ul class="posts">
+    {% set is_administrator = current_user.is_administrator() %}
     {% for post in posts %}
       {% set user = User(id=post['author_id']) %}
       <li class="post">
@@ -32,7 +33,7 @@
               <a href="{{ url_for('main.edit',id=post['id']) }}">
                 <span class="label label-primary">Edit</span>
               </a>
-            {% elif current_user.is_administrator() %}
+            {% elif is_administrator %}
               <a href="{{ url_for('main.edit',id=post['id']) }}">
                 <span class="label label-danger">Edit [Admin]</span>
               </a>

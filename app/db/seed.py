@@ -2,11 +2,11 @@ from random import randint
 from faker import Faker 
 from .UserModel import User
 from .PostModel import Post
-from .config import Database,Config
+from .config import Database
 from psycopg2 import DatabaseError
 
 def initiate_db():
-    db = Database(Config)
+    db = Database()
     conn = db.get_db()
     return conn
 

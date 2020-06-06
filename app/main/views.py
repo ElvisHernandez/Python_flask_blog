@@ -3,7 +3,7 @@ from flask import abort,render_template,session, \
 redirect,url_for,g,flash,current_app,request
 from . import main
 from .forms import NameForm,EditProfileForm,EditProfileAdminForm,PostForm
-from ..db.config import Config,Database
+from ..db.config import Database
 from ..db.RoleModel import Permissions
 from ..pagination import Pagination
 from threading import Thread
@@ -23,10 +23,10 @@ def inject_permissions():
 
 @main.before_app_request
 def open_db_connection():
-    db = Database(Config)
+    db = Database()
     db.get_db()
 
-@main.teardown_request
+@main.teardown_app_request
 def close_db(error):
     if hasattr(g, 'db'):
         g.db.close()
@@ -35,7 +35,7 @@ def close_db(error):
 @main.route('/', methods=['GET', 'POST'])
 def index():
     form = PostForm()
-    if current_user.can(Permissions.WRITE) and form.validate_on_submit():
+    if form.validate_on_submit() and current_user.can(Permissions.WRITE):
         post = Post(body=form.body.data,author_id=current_user.id)
         post.insert()
         return redirect(url_for('.index'))
@@ -50,7 +50,6 @@ def index():
     page = request.args.get('page',1,type=int)
     posts = Post.posts_by_page(page,posts_per_page)
     pagination = Pagination(pages=total_pages,page=page)
-    
     
     return render_template('index.html',form=form,posts=posts,pagination=pagination)
 

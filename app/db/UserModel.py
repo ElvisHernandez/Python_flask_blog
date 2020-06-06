@@ -35,7 +35,6 @@ class User(UserMixin,CRUD):
         self.last_seen = columns.get('last_seen',None)
         self.avatar_hash = columns.get('avatar_hash',None)
         self.in_db = self._check_user()
-
         if self.email is not None and self.avatar_hash is None:
             self.avatar_hash = self.gravatar_hash()
 

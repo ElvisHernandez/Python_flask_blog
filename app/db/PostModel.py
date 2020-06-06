@@ -112,4 +112,14 @@ class Post(CRUD):
         else:
             print ('The post was already in the database.')
 
-    
+    def update(self,prop_dict):
+        if self.id is not None and self.in_db is True and "body" in prop_dict:
+            prop_dict['body_html'] = self.body_html_transform(prop_dict['body'])
+            post = self._update(self.tablename,self.id,prop_dict)
+            if post is not None:
+                for prop in prop_dict:
+                    if hasattr(self,prop):
+                        self.__dict__[prop] = prop_dict[prop]
+        else:
+            print ('Post must already exist in the database, and a body key must \
+                be specified in prop_dict')

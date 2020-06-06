@@ -1,5 +1,6 @@
 from datetime import datetime
-from flask import render_template,session,redirect,url_for,g,flash,current_app,request
+from flask import abort,render_template,session, \
+redirect,url_for,g,flash,current_app,request
 from . import main
 from .forms import NameForm,EditProfileForm,EditProfileAdminForm,PostForm
 from ..db.config import Config,Database
@@ -126,3 +127,27 @@ def post(id):
         flash('That post does not exist in the database')
         return redirect(url_for('.index'))
     return render_template('post.html',posts=[post])
+
+@main.route('/edit/<int:id>',methods=['GET','POST'])
+def edit(id):
+
+    post = Post().get_post(id)
+    print ('This is the value passed to the id parameter: ',post.id)
+
+    if post is None:
+        flash('Apologies, something seems to have gone wrong. Please try again.')
+        abort(500)
+    
+    if current_user.id != post.author_id and \
+            not current_user.can(Permissions.ADMIN):
+        abort(403)
+
+    form = PostForm()
+    if form.validate_on_submit():
+        post.body = form.body.data
+        prop_dict = {"body":post.body}
+        post.update(prop_dict)
+        flash('The post has been updated.')
+        return redirect(url_for('.post',id=post.id))
+    form.body.data = post.body
+    return render_template('edit_post.html',form=form)

@@ -79,7 +79,10 @@ class Post(CRUD):
         try:
             conn = g.db
             cursor = conn.cursor()
-            sql_query = 'SELECT * FROM posts OFFSET %s LIMIT %s;'
+            sql_query = '''SELECT * FROM users
+                JOIN posts 
+                ON posts.author_id = users.id
+                OFFSET %s LIMIT %s;'''
             cursor.execute(sql_query,(posts_per_page*page,posts_per_page))
             posts = cursor.fetchall()
             return cls._dict_transform(posts,cursor)

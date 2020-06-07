@@ -8,11 +8,6 @@ UpdatePasswordForm,PasswordResetEmailForm,ResetPasswordForm, EmailUpdateForm
 from psycopg2 import Error
 from ..email import send_email
 
-@auth.teardown_request
-def close_db(error):
-    if hasattr(g, 'db'):
-        g.db.close()
-
 @auth.before_app_request
 def before_request():
     if current_user.is_authenticated:

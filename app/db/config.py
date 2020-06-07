@@ -60,6 +60,8 @@ class CRUD:
     @staticmethod
     def _check(table,unique_key,value):
         try:
+            if table == 'posts':
+                print ('The check method is going off!!!!! {} : {} => {}'.format(table,unique_key,value))
             conn = g.db
             cursor = conn.cursor()
             if type(value) is int:
@@ -72,13 +74,16 @@ class CRUD:
                     sql.Identifier(unique_key))
                 
             cursor.execute(sql_query,(value,))
-            matches = cursor.fetchall()
+            matches = cursor.fetchone()
             cursor.close()
 
-            if len(matches) == 0:
+            if table == 'posts':
+                print ('This is the result of the _check method: ',matches)
+
+            if matches is None:
                 return None
             props = [desc[0] for desc in cursor.description]
-            prop_dict = dict(zip(props,matches[0]))
+            prop_dict = dict(zip(props,matches))
 
             return prop_dict
         except psycopg2.Error as e:

@@ -5,7 +5,7 @@ from werkzeug.security import generate_password_hash,check_password_hash
 from ..email import send_email
 import os
 import hashlib
-from .config import CRUD,Database,Config
+from .config import CRUD,Database
 from .RoleModel import Role,Permissions
 from flask_login import UserMixin, AnonymousUserMixin
 from .. import login_manager
@@ -34,7 +34,8 @@ class User(UserMixin,CRUD):
         self.member_since = columns.get('member_since',None)
         self.last_seen = columns.get('last_seen',None)
         self.avatar_hash = columns.get('avatar_hash',None)
-        self.in_db = self._check_user()
+        if not 'no_check' in columns:
+            self.in_db = self._check_user()
         if self.email is not None and self.avatar_hash is None:
             self.avatar_hash = self.gravatar_hash()
 

@@ -50,18 +50,22 @@ def index():
     page = request.args.get('page',1,type=int)
     posts = Post.posts_by_page(page,posts_per_page)
     pagination = Pagination(pages=total_pages,page=page)
-    
-    return render_template('index.html',form=form,posts=posts,pagination=pagination)
+    avatar_url = 'http://www.gravatar.com/avatar/{avatar_hash}?s=40&d=identicon&r=g'
+
+    return render_template('index.html',form=form,posts=posts,\
+        pagination=pagination,avatar_url=avatar_url)
 
 
 @main.route('/user/<username>')
 def user(username):
     user = User(username=username.lower())
+    avatar_url = user.gravatar(size=40)
     if user.in_db is False:
         return render_template('404.html')
     else:
         posts = user.posts()
-        return render_template('user.html',user=user,current_time=datetime.utcnow(),posts=posts)
+        return render_template('user.html',user=user,
+            current_time=datetime.utcnow(),posts=posts,avatar_url=avatar_url)
 
 @main.route('/edit-profile',methods=['GET','POST'])
 @login_required
@@ -122,14 +126,14 @@ def edit_profile_admin(primary_id):
 @main.route('/post/<int:id>')
 def post(id):
     post = Post().get_post(id)
+    avatar_url = current_user.gravatar(size=40)
     if post is None:
         flash('That post does not exist in the database')
         return redirect(url_for('.index'))
-    return render_template('post.html',posts=[post])
+    return render_template('post.html',posts=[post],avatar_url=avatar_url)
 
 @main.route('/edit/<int:id>',methods=['GET','POST'])
 def edit(id):
-
     post = Post().get_post(id)
     print ('This is the value passed to the id parameter: ',post.id)
 

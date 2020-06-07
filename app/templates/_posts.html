@@ -3,19 +3,19 @@
   <ul class="posts">
     {% set is_administrator = current_user.is_administrator() %}
     {% for post in posts %}
-      {% set user = User(id=post['author_id']) %}
+      {% set avatar_url = avatar_url.format(avatar_hash=post['avatar_hash']) %}
       <li class="post">
         <div class="profile-thumbnail">
-          <a href="{{ url_for('.user',username=user.username) }}">
+          <a href="{{ url_for('.user',username=post['username']) }}">
             <img class="img-rounded profile-thumbnail" 
-              src="{{ user.gravatar(size=40) }}">
+              src="{{ avatar_url }}">
           </a>
         </div>
         <div class="post-content">
           <div class="post-date">{{ moment(post['time_stamp']).fromNow() }}</div>
           <div class="post-author">
-            <a href="{{ url_for('.user',username=user.username) }}">
-              {{ user.username }}
+            <a href="{{ url_for('.user',username=post['username']) }}">
+              {{ post['username'] }}
             </a>
           </div>
           <div class="post-body">

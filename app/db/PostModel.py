@@ -12,21 +12,43 @@ class Post(CRUD):
         self.body = columns.get('body',None)
         self.time_stamp = datetime.utcnow()
         self.author_id = columns.get('author_id',None)
-        self.in_db = False
+        self.in_db = self._check_post()
     
-    def get_post(self,primary_key=None):
-        if primary_key is not None:
-            post_dict = self._check(self.tablename,'id', primary_key)
+    def _check_post(self):
+        if self.id is not None:
+            post_dict = self._check(self.tablename,'id',self.id)
         else:
-            print ('A valid post id must be given.')
-            return None
-        if post_dict is not None:
+            print ('A valid id must be provided for the post')
+            return False
+        if post_dict is None:
+            return False
+        else:
             self.id = post_dict['id']
             self.body = post_dict['body']
             self.time_stamp = post_dict['time_stamp']
             self.author_id = post_dict['author_id']
-            self.in_db = True
-            return self
+            return True
+
+    @classmethod
+    def get_post(cls,primary_key=None):
+        if primary_key is not None:
+            try:
+                conn = g.db
+                cursor = conn.cursor()
+                sql_query = '''SELECT * FROM users 
+                               JOIN posts
+                               ON users.id = posts.author_id
+                               WHERE posts.id = %s;'''
+                cursor.execute(sql_query,(primary_key,))
+                post = [cursor.fetchone()]
+                return cls._dict_transform(post,cursor)
+
+            except:
+                print ('Something went wrong fetching the post')
+                return None
+        else:
+            print ('A valid post id must be given.')
+            return None
 
     @staticmethod
     def count():
@@ -58,6 +80,7 @@ class Post(CRUD):
             posts_list = []
             for post in posts:
                 posts_list.append(dict(zip(props,post)))
+                cursor.close()
             return posts_list
         return posts
 
@@ -80,7 +103,7 @@ class Post(CRUD):
             conn = g.db
             cursor = conn.cursor()
             sql_query = '''SELECT * FROM users
-                JOIN posts 
+                JOIN posts
                 ON posts.author_id = users.id
                 OFFSET %s LIMIT %s;'''
             cursor.execute(sql_query,(posts_per_page*page,posts_per_page))
@@ -94,8 +117,11 @@ class Post(CRUD):
         try:
             conn = g.db
             cursor = conn.cursor()
-            sql_query = '''SELECT * FROM posts WHERE author_id = %s 
-                                    ORDER BY time_stamp DESC;'''
+            sql_query = '''SELECT * FROM users
+                            JOIN posts
+                            ON users.id = posts.author_id
+                            WHERE author_id = %s 
+                            ORDER BY time_stamp DESC;'''
             cursor.execute(sql_query,(author_id,))
             posts = cursor.fetchall()
             return cls._dict_transform(posts,cursor)

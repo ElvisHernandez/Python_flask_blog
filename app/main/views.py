@@ -125,17 +125,16 @@ def edit_profile_admin(primary_id):
 
 @main.route('/post/<int:id>')
 def post(id):
-    post = Post().get_post(id)
-    avatar_url = current_user.gravatar(size=40)
+    post = Post.get_post(id)
+    avatar_url = 'http://www.gravatar.com/avatar/{avatar_hash}?s=40&d=identicon&r=g'
     if post is None:
         flash('That post does not exist in the database')
         return redirect(url_for('.index'))
-    return render_template('post.html',posts=[post],avatar_url=avatar_url)
+    return render_template('post.html',posts=post,avatar_url=avatar_url)
 
 @main.route('/edit/<int:id>',methods=['GET','POST'])
 def edit(id):
-    post = Post().get_post(id)
-    print ('This is the value passed to the id parameter: ',post.id)
+    post = Post(id=id)
 
     if post is None:
         flash('Apologies, something seems to have gone wrong. Please try again.')

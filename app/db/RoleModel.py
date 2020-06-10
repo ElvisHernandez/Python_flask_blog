@@ -37,7 +37,7 @@ class Role(CRUD):
         elif self.name is not None:
             role_dict = self._check(self.tablename,'name',self.name)
         else:
-            print ('No unique identifier was provided to check for role in database.')
+            logger.warning('No unique identifier was provided to check for role in database.')
             return False
         if role_dict is None:
             return False

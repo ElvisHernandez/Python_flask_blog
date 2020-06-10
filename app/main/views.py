@@ -35,6 +35,14 @@ def close_db(error):
 @main.route('/', methods=['GET', 'POST'])
 def index():
     form = PostForm()
+
+    user = User(id=5)
+
+    user.role_id = 100
+
+    user.can(10)
+
+
     if form.validate_on_submit() and current_user.can(Permissions.WRITE):
         post = Post(body=form.body.data,author_id=current_user.id)
         post.insert()

@@ -1,0 +1,3 @@
+WARNING:app.db.UserModel:2020-06-10 01:59:14,321:role:This is the users role_id: 100
+WARNING:app.db.UserModel:2020-06-10 01:59:14,424:role:This is the users role_id: 4
+WARNING:app.db.UserModel:2020-06-10 01:59:14,436:role:This is the users role_id: 4

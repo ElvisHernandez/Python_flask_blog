@@ -43,7 +43,7 @@ class Database(Config):
                                              dbname=self.dbname)
                 return self.conn
             except psycopg2.DatabaseError as e:
-                logger.exception('There was an error connecting to the database: ',e)
+                logger.exception('There was an error connecting to the database: %s' % e)
                 sys.exit()
                 return None
 
@@ -89,7 +89,7 @@ class CRUD:
 
             return prop_dict
         except psycopg2.Error as e:
-            logger.exception('something went wrong in the check function from the CRUD class: ',e)
+            logger.exception('something went wrong in the check function from the CRUD class: %s' % e)
             return None
     
     @staticmethod
@@ -123,7 +123,7 @@ class CRUD:
             cursor.close()
             return primary_key
         except psycopg2.Error as e:
-            logger.exception('Something went wrong in the _insert method from the CRUD class: ',e)
+            logger.exception('Something went wrong in the _insert method from the CRUD class: %s' % e)
             return None
 
     @staticmethod
@@ -139,7 +139,7 @@ class CRUD:
 
             cursor.close()
         except psycopg2.Error as e:
-            logger.exception('Something went wrong in the _delete method in the CRUD class: ',e)
+            logger.exception('Something went wrong in the _delete method in the CRUD class: %s' % e)
 
     @staticmethod
     def _update(table,unique_id,prop_dict):
@@ -166,7 +166,7 @@ class CRUD:
             cursor.close()
             return row
         except psycopg2.Error as e:
-            logger.exception('Something went wrong in the _update method from the CRUD class: ',e)
+            logger.exception('Something went wrong in the _update method from the CRUD class: %s' % e)
             return None
 
 #placed at the bottom to avoid circular import

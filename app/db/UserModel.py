@@ -129,7 +129,7 @@ class User(UserMixin,CRUD):
             return role
         
         except psycopg2.DatabaseError as e: 
-            logger.exception('Something went wrong in the role instance method: ',e)
+            logger.exception('Something went wrong in the role instance method: %s' % e)
             return None
     
     def can(self,perm):
@@ -137,6 +137,7 @@ class User(UserMixin,CRUD):
         if role is not None:
             return role.has_permission(perm)
         else:
+            print ('Is this log statement supposed to be coming out?')
             logger.warning('Could not find an associated role in the database.')
             return False
 

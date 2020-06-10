@@ -60,7 +60,7 @@ class Post(CRUD):
                 return cls._dict_transform(post,cursor)
 
             except psycopg2.DatabaseError as e:
-                logger.exception('Something went wrong fetching the post: ',e)
+                logger.exception('Something went wrong fetching the post: %s' % e)
                 return None
         else:
             logger.info('A valid post id must be given.')
@@ -76,7 +76,7 @@ class Post(CRUD):
             count = cursor.fetchone()[0]
             return count
         except psycopg2.DatabaseError as e:
-            logger.exception('Somthing went wrong while getting the posts count: ',e)
+            logger.exception('Somthing went wrong while getting the posts count: %s' % e)
             return None
 
     @staticmethod
@@ -110,7 +110,7 @@ class Post(CRUD):
             posts = cursor.fetchall()
             return cls._dict_transform(posts,cursor)
         except psycopg2.DatabaseError as e:
-            logger.exception('Something went wrong fetching all the posts in the get_all_posts method: ',e)
+            logger.exception('Something went wrong fetching all the posts in the get_all_posts method: %s' % e)
             return None
 
     @classmethod
@@ -126,7 +126,7 @@ class Post(CRUD):
             posts = cursor.fetchall()
             return cls._dict_transform(posts,cursor)
         except psycopg2.DatabaseError as e:
-            logger.exception('Something went wrong retrieving the posts by page: ',e)
+            logger.exception('Something went wrong retrieving the posts by page: %s' % e)
     
     @classmethod
     def posts_by_author(cls,author_id):
@@ -142,7 +142,7 @@ class Post(CRUD):
             posts = cursor.fetchall()
             return cls._dict_transform(posts,cursor)
         except psycopg2.DatabaseError as e:
-            logger.exception("Something went wrong trying to get author {}'s id: ".format(author_id),e)
+            logger.exception("Something went wrong trying to get author %s's id: %s" % (author_id,e))
             return None
 
     def insert(self):

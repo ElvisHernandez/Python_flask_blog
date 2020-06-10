@@ -10,6 +10,20 @@ from .RoleModel import Role,Permissions
 from flask_login import UserMixin, AnonymousUserMixin
 from .. import login_manager
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.WARNING)
+
+formatter = logging.Formatter('%(levelname)s:%(name)s:%(asctime)s:%(funcName)s:%(message)s')	
+file_handler = logging.FileHandler(os.path.abspath('logs') + '/UserModel.log')
+file_handler.setFormatter(formatter)
+
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -89,7 +103,7 @@ class User(UserMixin,CRUD):
         elif self.email is not None:
             user_dict = self._check(self.tablename,'email',self.email)
         else:
-            print ('No unique identifier was provided to check for user in database')
+            logger.info('No unique identifier was provided to check for user in database')
             return False
         if user_dict is None: 
             return False
@@ -114,8 +128,8 @@ class User(UserMixin,CRUD):
             role = Role(id=self.role_id)
             return role
         
-        except: 
-            print ('Something went wrong in the role instance method')
+        except psycopg2.DatabaseError as e: 
+            logger.exception('Something went wrong in the role instance method: ',e)
             return None
     
     def can(self,perm):
@@ -123,7 +137,7 @@ class User(UserMixin,CRUD):
         if role is not None:
             return role.has_permission(perm)
         else:
-            print ('Could not find an associated role in the database.')
+            logger.warning('Could not find an associated role in the database.')
             return False
 
     def is_administrator(self):
@@ -131,7 +145,6 @@ class User(UserMixin,CRUD):
         if role is not None:
             return role.has_permission(Permissions.ADMIN)
         else:
-            print ('Could not find an associated role in the database.')
             return False
 
     @property
@@ -155,14 +168,15 @@ class User(UserMixin,CRUD):
                 send_email(os.environ.get('ADMIN_EMAIL'),'New User',
                                 'mail/new_user', name=self.username)
         else:
-            print ('The user was already in the database')
+            logger.info('The user was already in the database')
+
     
     def update(self,prop_dict):
         '''prop_dict is a dictionary with the attributes/columns that 
         you want to update as keys, and their values as the values.
         e.g. prop_dict = {'username': 'TheNewUsername','role': 'TheNewRole'}'''
         if "password" in prop_dict:
-            print ('You cannot update the password in this way')
+            logger.info('You cannot update the password in this way')
             return None
         if "email" in prop_dict:
             self.email = prop_dict['email']
@@ -180,7 +194,7 @@ class User(UserMixin,CRUD):
         if self.in_db is True:
             self._delete(self.tablename,self.id)
         else:
-            print ('The user is not in the database')
+            logger.info('The user is not in the database')
 
 class AnonymousUser(AnonymousUserMixin):
     def can(self,perm):

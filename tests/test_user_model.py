@@ -40,7 +40,6 @@ class UserModelTestCase(unittest.TestCase):
     def test_valid_confirmation_token(self):
         u = User(id=1,username='TestUser',password="TestPassword")
         token = u.generate_confirmation_token()
-        print ('This is the token in the UserTestModel thing: ',token)
         self.assertTrue(u.confirm(token))
 
     def test_invalid_confirmation_token(self):

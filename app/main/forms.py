@@ -1,4 +1,4 @@
-from flask import g
+from flask import g,current_app
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField,TextAreaField,BooleanField,SelectField
 from wtforms.validators import DataRequired,Length,Email,Regexp,ValidationError
@@ -53,8 +53,8 @@ class EditProfileAdminForm(FlaskForm):
             cursor.execute(sql_query)
             results = cursor.fetchall()
             return results
-        except:
-            print ('Something went wrong in the get_role_choices method')
+        except e:
+            current_app.logger.exception('Something went wrong in the get_role_choices method: ',e)
             return None
     
 class PostForm(FlaskForm):

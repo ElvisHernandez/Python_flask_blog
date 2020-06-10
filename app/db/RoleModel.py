@@ -1,4 +1,19 @@
 from .config import CRUD
+import logging
+import os
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.WARNING)
+
+formatter = logging.Formatter('%(levelname)s:%(name)s:%(asctime)s:%(funcName)s:%(message)s')	
+file_handler = logging.FileHandler(os.path.abspath('logs') + '/RoleModel.log')
+file_handler.setFormatter(formatter)
+
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+
+logger.addHandler(stream_handler)
+logger.addHandler(file_handler)
 
 class Permissions:
     FOLLOW = 1

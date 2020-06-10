@@ -3,17 +3,16 @@ import os
 from flask import g
 import sys
 from dotenv import load_dotenv
-#from loguru import logger
 import logging 
 import psycopg2 
 from psycopg2 import sql
 load_dotenv()
-
+ 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
 
 formatter = logging.Formatter('%(levelname)s:%(name)s:%(asctime)s:%(funcName)s:%(message)s')	
-file_handler = logging.FileHandler('db.log')
+file_handler = logging.FileHandler(os.path.abspath('logs') + '/db.log')
 file_handler.setFormatter(formatter)
 
 logger.addHandler(file_handler)

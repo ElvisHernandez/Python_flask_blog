@@ -4,6 +4,22 @@ from datetime import datetime
 from .UserModel import User
 from markdown import markdown
 import bleach
+import logging
+import os
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.WARNING)
+
+formatter = logging.Formatter('%(levelname)s:%(name)s:%(asctime)s:%(funcName)s:%(message)s')	
+file_handler = logging.FileHandler(os.path.abspath('logs') + '/PostModel.log')
+file_handler.setFormatter(formatter)
+
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+
+
+logger.addHandler(stream_handler)
+logger.addHandler(file_handler)
 
 class Post(CRUD):
     tablename = 'posts'
@@ -18,7 +34,7 @@ class Post(CRUD):
         if self.id is not None:
             post_dict = self._check(self.tablename,'id',self.id)
         else:
-            print ('A valid id must be provided for the post')
+            logger.info('A valid id must be provided for the post')
             return False
         if post_dict is None:
             return False
@@ -43,11 +59,11 @@ class Post(CRUD):
                 post = [cursor.fetchone()]
                 return cls._dict_transform(post,cursor)
 
-            except:
-                print ('Something went wrong fetching the post')
+            except psycopg2.DatabaseError as e:
+                logger.exception('Something went wrong fetching the post: ',e)
                 return None
         else:
-            print ('A valid post id must be given.')
+            logger.info('A valid post id must be given.')
             return None
 
     @staticmethod
@@ -59,8 +75,8 @@ class Post(CRUD):
             cursor.execute(sql_query)
             count = cursor.fetchone()[0]
             return count
-        except:
-            print ('Somthing went wrong while getting the posts count')
+        except psycopg2.DatabaseError as e:
+            logger.exception('Somthing went wrong while getting the posts count: ',e)
             return None
 
     @staticmethod
@@ -93,8 +109,8 @@ class Post(CRUD):
             cursor.execute(sql_query)
             posts = cursor.fetchall()
             return cls._dict_transform(posts,cursor)
-        except:
-            print ('Something went wrong fetching all the posts in the get_all_posts method.')
+        except psycopg2.DatabaseError as e:
+            logger.exception('Something went wrong fetching all the posts in the get_all_posts method: ',e)
             return None
 
     @classmethod
@@ -109,8 +125,8 @@ class Post(CRUD):
             cursor.execute(sql_query,(posts_per_page*page,posts_per_page))
             posts = cursor.fetchall()
             return cls._dict_transform(posts,cursor)
-        except:
-            print ('Something went wrong retrieving the posts by page')
+        except psycopg2.DatabaseError as e:
+            logger.exception('Something went wrong retrieving the posts by page: ',e)
     
     @classmethod
     def posts_by_author(cls,author_id):
@@ -125,8 +141,8 @@ class Post(CRUD):
             cursor.execute(sql_query,(author_id,))
             posts = cursor.fetchall()
             return cls._dict_transform(posts,cursor)
-        except:
-            print ("Something went wrong trying to get author {}'s id".format(author_id))
+        except psycopg2.DatabaseError as e:
+            logger.exception("Something went wrong trying to get author {}'s id: ".format(author_id),e)
             return None
 
     def insert(self):
@@ -139,7 +155,7 @@ class Post(CRUD):
                 self.in_db = True
 
         else:
-            print ('The post was already in the database.')
+            logger.info('The post was already in the database.')
 
     def update(self,prop_dict):
         if self.id is not None and self.in_db is True and "body" in prop_dict:
@@ -150,5 +166,5 @@ class Post(CRUD):
                     if hasattr(self,prop):
                         self.__dict__[prop] = prop_dict[prop]
         else:
-            print ('Post must already exist in the database, and a body key must \
+            logger.info('Post must already exist in the database, and a body key must \
                 be specified in prop_dict')

@@ -32,7 +32,7 @@ def login():
                 return redirect(next)
             flash('Invalid username or password.')
         except Error as e:
-            current_app.logger.exception('There was an error in the login route: ',e)
+            current_app.logger.exception('There was an error in the login route: %s' % e)
     return render_template('auth/login.html',form=form)
 
 @auth.route('/logout')
@@ -58,7 +58,7 @@ def register():
             flash('A confirmation email has been sent to the email you provided.')
             return redirect(url_for('main.index'))
         except Error as e:
-            current_app.logger.exception('There was an error registering the user: ',e)
+            current_app.logger.exception('There was an error registering the user: %s' % e)
     return render_template('auth/register.html',form=form)
     
 @auth.route('/confirm/<token>')
@@ -98,7 +98,7 @@ def update_password():
             new_prop = {'password_hash': current_user.password_hash}
             current_user.update(new_prop)
         except e:
-            current_app.logger.exception('Something went wrong while updating the password: ',e)
+            current_app.logger.exception('Something went wrong while updating the password: %s' % e)
         finally:
             flash("You've sucessfully updated your password!")
             g.db.close()
@@ -121,7 +121,7 @@ def send_reset_password_email():
                 flash('No such email exists in our database')
                 return redirect(url_for('auth.send_reset_password_email'))
         except e:
-            current_app.logger.exception('Something went wrong sending the password reset email: ',e)
+            current_app.logger.exception('Something went wrong sending the password reset email: %s' % e)
     return render_template('auth/password_email_reset.html',form=form)
 
 @auth.route('/reset_password/<username>/<token>',methods=['GET','POST'])
@@ -142,7 +142,7 @@ def reset_password(username,token):
             flash('Invalid or expired token.')
             return redirect(url_for('auth.send_reset_password_email'))
     except e:
-        current_app.logger.exception('Something went wrong resetting the password: ',e)
+        current_app.logger.exception('Something went wrong resetting the password: %s' % e)
 
 @auth.route('/update_email',methods=['GET','POST'])
 @login_required

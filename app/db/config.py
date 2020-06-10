@@ -3,12 +3,20 @@ import os
 from flask import g
 import sys
 from dotenv import load_dotenv
-from loguru import logger
+#from loguru import logger
+import logging 
 import psycopg2 
 from psycopg2 import sql
-
 load_dotenv()
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.WARNING)
+
+formatter = logging.Formatter('%(levelname)s:%(name)s:%(asctime)s:%(funcName)s:%(message)s')	
+file_handler = logging.FileHandler('db.log')
+file_handler.setFormatter(formatter)
+
+logger.addHandler(file_handler)
 
 class Config:
     "Database config"
@@ -36,7 +44,7 @@ class Database(Config):
                                              dbname=self.dbname)
                 return self.conn
             except psycopg2.DatabaseError as e:
-                logger.error(e)
+                logger.exception('There was an error connecting to the database: ',e)
                 sys.exit()
                 return None
 
@@ -60,8 +68,6 @@ class CRUD:
     @staticmethod
     def _check(table,unique_key,value):
         try:
-            if table == 'posts':
-                print ('The check method is going off!!!!! {} : {} => {}'.format(table,unique_key,value))
             conn = g.db
             cursor = conn.cursor()
             if type(value) is int:
@@ -77,9 +83,6 @@ class CRUD:
             matches = cursor.fetchone()
             cursor.close()
 
-            if table == 'posts':
-                print ('This is the result of the _check method: ',matches)
-
             if matches is None:
                 return None
             props = [desc[0] for desc in cursor.description]
@@ -87,7 +90,7 @@ class CRUD:
 
             return prop_dict
         except psycopg2.Error as e:
-            print ('something went wrong in the check function from the CRUD class: ',e)
+            logger.exception('something went wrong in the check function from the CRUD class: ',e)
             return None
     
     @staticmethod
@@ -121,7 +124,7 @@ class CRUD:
             cursor.close()
             return primary_key
         except psycopg2.Error as e:
-            print ('Something went wrong in the _insert method from the CRUD class: ',e)
+            logger.exception('Something went wrong in the _insert method from the CRUD class: ',e)
             return None
 
     @staticmethod
@@ -134,11 +137,10 @@ class CRUD:
             cursor.execute(sql_delete,(id,))
             deleted = cursor.fetchone()
             conn.commit()
-            print ('This is the deleted row: ',deleted)
 
             cursor.close()
         except psycopg2.Error as e:
-            print ('Something went wrong in the _delete method in the CRUD class: ',e)
+            logger.exception('Something went wrong in the _delete method in the CRUD class: ',e)
 
     @staticmethod
     def _update(table,unique_id,prop_dict):
@@ -165,7 +167,7 @@ class CRUD:
             cursor.close()
             return row
         except psycopg2.Error as e:
-            print ('Something went wrong in the _update method from the CRUD class: ', e)
+            logger.exception('Something went wrong in the _update method from the CRUD class: ',e)
             return None
 
 #placed at the bottom to avoid circular import

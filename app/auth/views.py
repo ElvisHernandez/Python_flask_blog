@@ -1,4 +1,4 @@
-from flask import render_template,redirect,request,url_for,flash,g
+from flask import render_template,redirect,request,url_for,flash,g,current_app
 from flask_login import login_user,logout_user,login_required,current_user
 from . import auth
 from ..db.UserModel import User
@@ -32,7 +32,7 @@ def login():
                 return redirect(next)
             flash('Invalid username or password.')
         except Error as e:
-            print ('There was a problem connecting to the database: ',e)
+            current_app.logger.exception('There was an error in the login route: ',e)
     return render_template('auth/login.html',form=form)
 
 @auth.route('/logout')
@@ -58,7 +58,7 @@ def register():
             flash('A confirmation email has been sent to the email you provided.')
             return redirect(url_for('main.index'))
         except Error as e:
-            print ('There was an error registering the user: ',e)
+            current_app.logger.exception('There was an error registering the user: ',e)
     return render_template('auth/register.html',form=form)
     
 @auth.route('/confirm/<token>')
@@ -82,7 +82,6 @@ def unconfirmed():
 @auth.route('/confirm')
 @login_required
 def resend_confirmation():
-    print ('This is in the resend_confirmation email view function')
     token = current_user.generate_confirmation_token()
     send_email(current_user.email,'Confirm Your Account',
         'auth/email/confirm',user=current_user,token=token)
@@ -98,8 +97,8 @@ def update_password():
             current_user.password = form.new_password.data
             new_prop = {'password_hash': current_user.password_hash}
             current_user.update(new_prop)
-        except:
-            print ('Something went wrong while updating the password')
+        except e:
+            current_app.logger.exception('Something went wrong while updating the password: ',e)
         finally:
             flash("You've sucessfully updated your password!")
             g.db.close()
@@ -121,8 +120,8 @@ def send_reset_password_email():
             else:
                 flash('No such email exists in our database')
                 return redirect(url_for('auth.send_reset_password_email'))
-        except:
-            print ('Something went wrong sending the password reset email')
+        except e:
+            current_app.logger.exception('Something went wrong sending the password reset email: ',e)
     return render_template('auth/password_email_reset.html',form=form)
 
 @auth.route('/reset_password/<username>/<token>',methods=['GET','POST'])
@@ -142,8 +141,8 @@ def reset_password(username,token):
         else:
             flash('Invalid or expired token.')
             return redirect(url_for('auth.send_reset_password_email'))
-    except:
-        print ('Something went wrong resetting the password')
+    except e:
+        current_app.logger.exception('Something went wrong resetting the password: ',e)
 
 @auth.route('/update_email',methods=['GET','POST'])
 @login_required

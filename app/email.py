@@ -15,7 +15,7 @@ def send_email(to, subject, template, **kwargs):
         thr = Thread(target=send_async_email, args=[app, msg])
         thr.start()
         return thr
-    except:
-        print ('The email is not sending properly')
+    except e:
+        current_app.logger.exception('The email is not sending properly: ',e)
 
 from . import mail

@@ -52,38 +52,26 @@ class User(UserMixin,CRUD):
             self.in_db = self._check_user()
         if self.email is not None and self.avatar_hash is None:
             self.avatar_hash = self.gravatar_hash()
+    
+    ### Auth methods ###
+    
+    @property
+    def password(self): 
+        '''Raises AttributeError if the password attribute is attempted to
+        be accessed directly.'''
+        raise AttributeError('password is not a readable attribute')
 
-    def gravatar_hash(self):
-        '''Generates a hash based off a user's email that corresponds 
-        to a Gravar avatar. '''
-        return hashlib.md5(self.email.lower().encode('utf-8')).hexdigest()
+    @password.setter
+    def password(self,password):
+        '''Invokes the generate_password_hash provided by werkzeug.security
+        to generate a secure hash.'''
+        self.password_hash = generate_password_hash(password)
 
-    def gravatar(self,size=100,default='identicon',rating='g'):
-        '''This method is invoked automatically to provide a default
-        avatar in the case that a user does not provide their own.'''
-        if request.is_secure:
-            url = 'https://secure.gravatar.com/avatar'
-        else:
-            url = 'http://www.gravatar.com/avatar'
-        hash = self.avatar_hash or self.gravatar_hash()
-        return '{url}/{hash}?s={size}&d={default}&r={rating}'.format(
-            url=url, hash=hash, size=size, default=default, rating=rating)
-
-    def posts(self):
-        '''Returns all the posts written by a user'''
-        if self.in_db:
-            posts = Post.posts_by_author(self.id)
-            return posts
-        else:
-            return []
-
-    def ping(self):
-        '''Used in auth blueprint before every request if a user
-        is logged in to track the latest time for which they were on the app''' 
-        self.last_seen = datetime.utcnow()
-        new_prop = {'last_seen':self.last_seen}
-        self.update(new_prop)
-
+    def verify_password(self,password):
+        '''Invokes the check_password_hash provided by werkzeug.security to 
+        verify or deny a provided password against the stored password_hash.'''
+        return check_password_hash(self.password_hash,password)
+    
     def generate_confirmation_token(self, expiration=3600):
         '''Generates a confirmation token for authentication purposes
         which is hashed with the SECRET_KEY configuration variable of Flask'''
@@ -104,8 +92,92 @@ class User(UserMixin,CRUD):
         new_prop = {'confirmed': True}
         self.update(new_prop)
         return True
-        
     
+    ### Permissions methods ###
+
+    def can(self,perm):
+        '''Returns true if the user has the passed permissions and false otherwise.'''
+        role = self.role()
+        if role is not None:
+            return role.has_permission(perm)
+        else:
+            logger.warning('Could not find an associated role in the database.')
+            return False
+
+    def is_administrator(self):
+        '''Returns true if a user has administrator permissions and false otherwise.'''
+        role = self.role()
+        if role is not None:
+            return role.has_permission(Permissions.ADMIN)
+        else:
+            return False
+
+    ### Association/relationship methods ###
+
+    def is_following(self,user):
+        '''Return True if the user is following the provided user and returns 
+        false otherwise.'''
+        if user.id is None or user.in_db is False:
+            return False
+        try:
+            conn = g.db
+            cursor = conn.cursor()
+            sql_query = '''SELECT follower_id from follow WHERE followed_id = %s
+                           AND follower_id = %s;'''
+            cursor.execute(sql_query,(user.id,self.id))
+            follower_id = cursor.fetchone()
+            if follower_id is None or follower_id[0] != self.id:
+                return False
+            return True
+        except: 
+            logger.exception('''Something went wrong when trying to determine whether the user follows %s.''' % user.username) 
+
+    def posts(self):
+        '''Returns all the posts written by a user'''
+        if self.in_db:
+            posts = Post.posts_by_author(self.id)
+            return posts
+        else:
+            return []
+
+    def role(self):
+        '''Returns an instance of the Role class that corresponds
+        to the role_id of the user.'''
+        try:
+            role = Role(id=self.role_id)
+            return role
+        
+        except psycopg2.DatabaseError as e: 
+            logger.exception('Something went wrong in the role instance method: %s' % e)
+            return None
+
+    ### User Avatar methods ###
+
+    def gravatar_hash(self):
+        '''Generates a hash based off a user's email that corresponds 
+        to a Gravar avatar. '''
+        return hashlib.md5(self.email.lower().encode('utf-8')).hexdigest()
+
+    def gravatar(self,size=100,default='identicon',rating='g'):
+        '''This method is invoked automatically to provide a default
+        avatar in the case that a user does not provide their own.'''
+        if request.is_secure:
+            url = 'https://secure.gravatar.com/avatar'
+        else:
+            url = 'http://www.gravatar.com/avatar'
+        hash = self.avatar_hash or self.gravatar_hash()
+        return '{url}/{hash}?s={size}&d={default}&r={rating}'.format(
+            url=url, hash=hash, size=size, default=default, rating=rating)
+
+    ### CRUD and/or utility methods ###
+
+    def ping(self):
+        '''Used in auth blueprint before every request if a user
+        is logged in to track the latest time for which they were on the app''' 
+        self.last_seen = datetime.utcnow()
+        new_prop = {'last_seen':self.last_seen}
+        self.update(new_prop)
+
     def _check_user(self):
         '''Used in the constructor to automatically fetch
         the attributes of a already in the database.'''
@@ -135,51 +207,6 @@ class User(UserMixin,CRUD):
             self.avatar_hash = user_dict.get('avatar_hash',None)
             return True
     
-    
-    def role(self):
-        '''Returns an instance of the Role class that corresponds
-        to the role_id of the user.'''
-        try:
-            role = Role(id=self.role_id)
-            return role
-        
-        except psycopg2.DatabaseError as e: 
-            logger.exception('Something went wrong in the role instance method: %s' % e)
-            return None
-    
-    def can(self,perm):
-        '''Returns true if the user has the passed permissions and false otherwise.'''
-        role = self.role()
-        if role is not None:
-            return role.has_permission(perm)
-        else:
-            logger.warning('Could not find an associated role in the database.')
-            return False
-
-    def is_administrator(self):
-        '''Returns true if a user has administrator permissions and false otherwise.'''
-        role = self.role()
-        if role is not None:
-            return role.has_permission(Permissions.ADMIN)
-        else:
-            return False
-
-    @property
-    def password(self): 
-        '''Raises AttributeError if the password attribute is attempted to
-        be accessed directly.'''
-        raise AttributeError('password is not a readable attribute')
-
-    @password.setter
-    def password(self,password):
-        '''Invokes the generate_password_hash method to generate a secure hash.'''
-        self.password_hash = generate_password_hash(password)
-
-    def verify_password(self,password):
-        '''Invokes the check_password_hash method to verify or deny a provided password
-        against the stored password_hash.'''
-        return check_password_hash(self.password_hash,password)
-
     def insert(self):
         '''Inserts an instance of a User into the database if not already present and sends
         the owner of the site an email to notify them that a new member has joined.'''
@@ -194,7 +221,6 @@ class User(UserMixin,CRUD):
         else:
             logger.info('The user was already in the database')
 
-    
     def update(self,prop_dict):
         '''Updates the attributes of a user already in the database. prop_dict is a dictionary
         with the attributes/columns that you want to update as keys, and their values as the values.

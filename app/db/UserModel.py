@@ -133,7 +133,24 @@ class User(UserMixin,CRUD):
         except:
             logger.exception('Something went wrong when user: %s tried to follow user: %s' % (self.username,user.username))
         
-
+    def unfollow(self,user):
+        '''Removes an established follow relationship from the database if one is already present.'''
+        if not self.is_following(user):
+            logger.info('There is no follow relationship to remove from the database.')
+            return
+        try:
+            conn = g.db
+            cursor = conn.cursor()
+            sql_delete = '''DELETE FROM follow WHERE followed_id = %s AND follower_id = %s RETURNING follower_id;'''
+            cursor.execute(sql_delete,(user.id,self.id))
+            conn.commit()
+            follower_id = cursor.fetchone()
+            print ('User %s unfollowed user %s' % (self.username,user.username))
+            if follower_id is None or follower_id[0] != self.id:
+                return False
+            return True
+        except:
+            logger.exception('Something went wrong when user: %s tried to unfollow user: %s' % (self.username,user.username))
 
     def is_following(self,user):
         '''Returns True if the user is following the provided user and returns 

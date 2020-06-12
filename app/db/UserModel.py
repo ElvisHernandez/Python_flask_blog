@@ -115,14 +115,14 @@ class User(UserMixin,CRUD):
     ### Association/relationship methods ###
 
     def is_following(self,user):
-        '''Return True if the user is following the provided user and returns 
+        '''Returns True if the user is following the provided user and returns 
         false otherwise.'''
         if user.id is None or user.in_db is False:
             return False
         try:
             conn = g.db
             cursor = conn.cursor()
-            sql_query = '''SELECT follower_id from follow WHERE followed_id = %s
+            sql_query = '''SELECT follower_id FROM follow WHERE followed_id = %s
                            AND follower_id = %s;'''
             cursor.execute(sql_query,(user.id,self.id))
             follower_id = cursor.fetchone()
@@ -130,7 +130,27 @@ class User(UserMixin,CRUD):
                 return False
             return True
         except: 
-            logger.exception('''Something went wrong when trying to determine whether the user follows %s.''' % user.username) 
+            logger.exception('''Something went wrong when trying to determine whether \
+                    user: %s follows user: %s.''' % (self.username,user.username)) 
+
+    def is_followed_by(self,user):
+        '''Returns True if the user is followed by the provided user and
+        returns False otherwise.'''
+        if user.id is None or user.in_db is False:
+            return False
+        try:
+            conn = g.db
+            cursor = conn.cursor()
+            sql_query = '''SELECT followed_id FROM follow WHERE followed_id = %s \
+                           AND follower_id = %s;'''
+            cursor.execute(sql_query,(self.id,user.id))
+            followed_id = cursor.fetchone()
+            if followed_id is None or followed_id[0] != self.id:
+                return False
+            return True
+        except:
+            logger.exception('''Something went wrong when trying to determine whether \
+                    user: %s is followed by user: %s''' % (self.username,user.username))
 
     def posts(self):
         '''Returns all the posts written by a user'''

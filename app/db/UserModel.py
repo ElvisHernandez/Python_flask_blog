@@ -114,6 +114,27 @@ class User(UserMixin,CRUD):
 
     ### Association/relationship methods ###
 
+    def follow(self,user):
+        '''Creates an entry in the follow table that establishes a follow relationship
+        between the user and the passed in user if not already present in the database.'''
+        if self.is_following(user):
+            logger.info('Follow relationship already exists in the databse.')
+            return 
+        try:
+            conn = g.db 
+            cursor = conn.cursor()
+            sql_insert = '''INSERT INTO follow (follower_id,followed_id) VALUES (%s,%s) RETURNING follower_id;'''
+            cursor.execute(sql_insert,(self.id,user.id))
+            conn.commit()
+            follower_id = cursor.fetchone()
+            if follower_id is None or follower_id[0] != self.id:
+                return False
+            return True
+        except:
+            logger.exception('Something went wrong when user: %s tried to follow user: %s' % (self.username,user.username))
+        
+
+
     def is_following(self,user):
         '''Returns True if the user is following the provided user and returns 
         false otherwise.'''

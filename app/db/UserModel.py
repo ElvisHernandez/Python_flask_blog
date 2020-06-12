@@ -196,9 +196,8 @@ class User(UserMixin,CRUD):
 
     
     def update(self,prop_dict):
-        '''Updates the attributes of a user already in the database. 
-        prop_dict is a dictionary with the attributes/columns that 
-        you want to update as keys, and their values as the values.
+        '''Updates the attributes of a user already in the database. prop_dict is a dictionary
+        with the attributes/columns that you want to update as keys, and their values as the values.
         e.g. prop_dict = {'username': 'TheNewUsername','role': 'TheNewRole'}'''
         if "password" in prop_dict:
             logger.info('You cannot update the password in this way')

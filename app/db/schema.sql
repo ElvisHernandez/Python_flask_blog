@@ -42,3 +42,10 @@ body TEXT,
 body_html TEXT,
 time_stamp TIMESTAMP NOT NULL DEFAULT now(),
 author_id INT REFERENCES users (id) ON DELETE CASCADE);
+
+CREATE TABLE IF NOT EXISTS follow 
+(follower_id INT REFERENCES users (id) ON UPDATE CASCADE ON DELETE CASCADE,
+followed_id INT REFERENCES users (id) ON UPDATE CASCADE ON DELETE CASCADE,
+time_stamp TIMESTAMP NOT NULL DEFAULT now(),
+CONSTRAINT follow_pkey PRIMARY KEY (follower_id,followed_id));
+

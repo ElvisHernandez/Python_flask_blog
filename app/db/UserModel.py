@@ -143,7 +143,7 @@ class User(UserMixin,CRUD):
         between the user and the passed in user if not already present in the database.'''
         if self.is_following(user):
             logger.info('Follow relationship already exists in the databse.')
-            return 
+            return None
         try:
             conn = g.db 
             cursor = conn.cursor()

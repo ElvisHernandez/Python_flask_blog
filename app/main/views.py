@@ -162,12 +162,41 @@ def follow(username):
     user = User(username=username)
     if user is None:
         flash('Invalid user')
+        current_app.logger.warning('User %s had the option to follow a user\
+                that was not in the database' % current_user.username)
         return redirect(url_for('.index'))
     if current_user.is_following(user):
         flash('You are already following this user.')
-        return redirect(url_for('.user',username=username)
+        current_app.logger.warning('User %s had the option to follow a user\
+                they were already following' % current_user.username)
+        return redirect(url_for('.user',username=username))
     current_user.follow(user)
-    flash('You are now following %s' %s username)
-    return redirect(url_for('.user',username=username)
+    flash('You are now following %s' % username)
+    return redirect(url_for('.user',username=username))
     
+@main.route('/unfollow/<username>')
+@login_required
+@permission_required(Permissions.FOLLOW)
+def unfollow(username):
+    user = User(username=username)
+    if user is None:
+        flash('Invalid user')
+        current_app.logger.warning('User %s had the option to unfollow a user\
+                that was not in the database' % current_user.username)
+        return redirect(url_for('.index'))
+    if not current_user.is_following(user):
+        flash('You were not following the specified user.')
+        current_app.logger.warning('User %s had the option to unfollow a user\
+                they were not following to begin with' % current_user.username)
+        return redirect(url_for('.user',username=username))
+    current_user.unfollow(user)
+    flash('You are no longer following %s' % username)
+    return redirect(url_for('.user',username=username))
+
+
+
+
+
+
+
 

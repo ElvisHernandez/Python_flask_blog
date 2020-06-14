@@ -15,6 +15,7 @@ from math import floor
 from .. import mail,login_manager
 from ..db.UserModel import User
 from ..db.PostModel import Post
+from ..decorators import permission_required
 
 @main.app_context_processor
 def inject_permissions():
@@ -35,14 +36,6 @@ def close_db(error):
 @main.route('/', methods=['GET', 'POST'])
 def index():
     form = PostForm()
-
-    user = User(id=5)
-
-    user.role_id = 100
-
-    user.can(10)
-
-
     if form.validate_on_submit() and current_user.can(Permissions.WRITE):
         post = Post(body=form.body.data,author_id=current_user.id)
         post.insert()
@@ -161,3 +154,20 @@ def edit(id):
         return redirect(url_for('.post',id=post.id))
     form.body.data = post.body
     return render_template('edit_post.html',form=form)
+
+@main.route('/follow/<username>')
+@login_required
+@permission_required(Permissions.FOLLOW)
+def follow(username):
+    user = User(username=username)
+    if user is None:
+        flash('Invalid user')
+        return redirect(url_for('.index'))
+    if current_user.is_following(user):
+        flash('You are already following this user.')
+        return redirect(url_for('.user',username=username)
+    current_user.follow(user)
+    flash('You are now following %s' %s username)
+    return redirect(url_for('.user',username=username)
+    
+

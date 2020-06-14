@@ -114,6 +114,30 @@ class User(UserMixin,CRUD):
 
     ### Association/relationship methods ###
 
+    def follower_count(self):
+        try:
+            conn = g.db
+            cursor = conn.cursor()
+            sql_query = '''SLECT COUNT(*) FROM follow WHERE followed_id = %s;'''
+            cursor.execute(sql_query,(self.id,))
+            count = cursor.fetchone()[0]
+            return count
+        except:
+            logger.exception("Something went wrong getting the follower count \
+                    of user %s" % self.username)
+
+    def followed_count(self):
+        try:
+            conn = g.db
+            cursor = conn.cursor()
+            sql_query = '''SELECT COUNT(*) FROM follow WHERE follower_id = %s;'''
+            cursor.execute(sql_query,(self.id,))
+            count = cursor.fetchone()
+            return count
+        except:
+            logger.exception("Something went wrong getting the followed count \
+                    of user %s" % self.username)
+
     def follow(self,user):
         '''Creates an entry in the follow table that establishes a follow relationship
         between the user and the passed in user if not already present in the database.'''
